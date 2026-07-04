@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const Document = require('../models/Document');
+const { analyzeFinancialText } = require('../services/aiService');
 
 // Configure Multer to store the uploaded file in memory (RAM) instead of disk
 // This is faster and safer for serverless deployments like Render/Vercel
@@ -32,18 +33,31 @@ router.post('/', upload.single('file'), async (req, res) => {
     
     await newDocument.save();
 
-    // 3. (Future Step) Here we will pass `extractedText` to the AI Agents
+    // 3. Trigger Gemini Analysis Asynchronously or Await it
+    // We await it here so the client gets immediate results
+    const aiAnalysis = await analyzeFinancialText(extractedText);
+
+    // 4. Update the document with AI findings
+    newDocument.status = 'completed';
+    newDocument.complianceScore = aiAnalysis.complianceScore;
+    newDocument.flaggedIssues = aiAnalysis.flaggedIssues;
+    await newDocument.save();
 
     res.status(200).json({
-      message: 'File parsed successfully',
-      documentId: newDocument._id,
-      pages: pdfData.numpages,
-      textPreview: extractedText.substring(0, 200) + '...' // Send back a preview
+      message: 'Document audited successfully by Gemini AI',
+      document: newDocument
     });
 
+    // res.status(200).json({
+    //   message: 'File parsed successfully',
+    //   documentId: newDocument._id,
+    //   pages: pdfData.numpages,
+    //   textPreview: extractedText.substring(0, 200) + '...' // Send back a preview
+    // });
+
   } catch (error) {
-    console.error('Upload Error:', error);
-    res.status(500).json({ error: 'Failed to process PDF', details: error.message });
+    console.error('Upload Endpoint Error:', error);
+    res.status(500).json({ error: 'Failed to process pipeline', details: error.message });
   }
 });
 
