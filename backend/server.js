@@ -4,7 +4,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./src/routes/authRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
-
+const documentRoutes = require('./src/routes/documentRoutes');
+const cookieParser = require('cookie-parser');
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27016/finaudit')
@@ -31,6 +33,7 @@ app.get('/api/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/documents', documentRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
