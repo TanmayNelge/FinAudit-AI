@@ -1,14 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Document = require('../models/Document');
+const { requireAuth } = require('../middleware/authMiddleware');
 
 // GET: Fetch dashboard analytics
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
-    // Hardcoded for testing until JWT extraction middleware is added to all routes
-    const userId = '60d5ec49c952402b14421b88'; 
-
-    const documents = await Document.find({ userId });
+    const documents = await Document.find({ userId: req.userId });
 
     const totalAudited = documents.length;
     
