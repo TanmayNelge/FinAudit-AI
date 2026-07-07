@@ -1,71 +1,81 @@
-import { FileCheck2, ClockAlert, ShieldX, TrendingUp } from 'lucide-react'
-
-const stats = [
-  {
-    label: 'Documents Reviewed',
-    value: '1,284',
-    delta: '+12.4%',
-    positive: true,
-    icon: FileCheck2,
-    accent: 'text-success',
-  },
-  {
-    label: 'Pending Review',
-    value: '37',
-    delta: '+5 today',
-    positive: false,
-    icon: ClockAlert,
-    accent: 'text-warning',
-  },
-  {
-    label: 'Flagged for Risk',
-    value: '7',
-    delta: '-2 vs last wk',
-    positive: true,
-    icon: ShieldX,
-    accent: 'text-destructive',
-  },
-  {
-    label: 'Compliance Score',
-    value: '98.2%',
-    delta: '+0.6%',
-    positive: true,
-    icon: TrendingUp,
-    accent: 'text-primary',
-  },
-]
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { FileText, Activity, AlertOctagon, TrendingUp, Loader2 } from 'lucide-react';
 
 export function StatCards() {
+  const [metrics, setMetrics] = useState({
+    totalAudited: 0,
+    avgScore: 0,
+    criticalAlerts: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  const fetchMetrics = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/analytics');
+      setMetrics(response.data);
+    } catch (error) {
+      console.error('Failed to fetch analytics', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Poll every 5 seconds to keep the numbers live as new documents finish auditing
+  useEffect(() => {
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const cards = [
+    {
+      title: 'Total Audits Processed',
+      value: loading ? <Loader2 className="size-5 animate-spin" /> : metrics.totalAudited,
+      icon: FileText,
+      trend: '+12% from last week',
+      color: 'text-blue-500',
+      bg: 'bg-blue-500/10'
+    },
+    {
+      title: 'Average Compliance Score',
+      value: loading ? <Loader2 className="size-5 animate-spin" /> : `${metrics.avgScore}/100`,
+      icon: Activity,
+      trend: metrics.avgScore >= 80 ? 'Optimal Status' : 'Needs Review',
+      color: metrics.avgScore >= 80 ? 'text-emerald-500' : 'text-amber-500',
+      bg: metrics.avgScore >= 80 ? 'bg-emerald-500/10' : 'bg-amber-500/10'
+    },
+    {
+      title: 'Critical Risk Alerts',
+      value: loading ? <Loader2 className="size-5 animate-spin" /> : metrics.criticalAlerts,
+      icon: AlertOctagon,
+      trend: 'Documents requiring immediate action',
+      color: metrics.criticalAlerts > 0 ? 'text-rose-500' : 'text-slate-400',
+      bg: metrics.criticalAlerts > 0 ? 'bg-rose-500/10' : 'bg-slate-500/10'
+    }
+  ];
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {stats.map((stat) => {
-        const Icon = stat.icon
-        return (
-          <div
-            key={stat.label}
-            className="rounded-lg border border-border bg-card p-4"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                {stat.label}
-              </span>
-              <Icon className={`size-4 ${stat.accent}`} aria-hidden="true" />
-            </div>
-            <div className="mt-3 flex items-end justify-between">
-              <span className="font-mono text-2xl font-semibold tracking-tight text-foreground">
-                {stat.value}
-              </span>
-              <span
-                className={`text-xs font-medium ${
-                  stat.positive ? 'text-success' : 'text-warning'
-                }`}
-              >
-                {stat.delta}
-              </span>
+    <div className="grid gap-6 md:grid-cols-3">
+      {cards.map((card, i) => (
+        <div key={i} className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-muted-foreground">{card.title}</h3>
+            <div className={`rounded-md p-2 ${card.bg}`}>
+              <card.icon className={`size-4 ${card.color}`} />
             </div>
           </div>
-        )
-      })}
+          <div className="mt-4">
+            <div className="text-3xl font-bold tracking-tight text-foreground">
+              {card.value}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+              <TrendingUp className="size-3" />
+              {card.trend}
+            </p>
+          </div>
+        </div>
+      ))}
     </div>
-  )
+  );
 }

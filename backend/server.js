@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./src/routes/authRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
 const documentRoutes = require('./src/routes/documentRoutes');
+const analyticsRoutes = require('./src/routes/analyticsRoutes');
 const cookieParser = require('cookie-parser');
 
 dotenv.config();
@@ -34,6 +35,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
