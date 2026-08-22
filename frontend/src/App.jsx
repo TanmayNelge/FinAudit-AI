@@ -19,7 +19,7 @@ export default function App() {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar user={user} />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">

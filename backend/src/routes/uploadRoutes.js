@@ -1,40 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const pdfParse = require('pdf-parse');
+const { PDFParse } = require('pdf-parse'); // <--- CHANGED: Destructuring the new class
 const Document = require('../models/Document');
 const { analyzeFinancialText } = require('../services/aiService');
-const {requireAuth} = require('../middleware/authMiddleware');
+const { requireAuth } = require('../middleware/authMiddleware');
 
-// Configure Multer to store the uploaded file in memory (RAM) instead of disk
-// This is faster and safer for serverless deployments like Render/Vercel
 const upload = multer({ 
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+  limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// POST: Upload and Parse PDF
-router.post('/', upload.single('file'), async (req, res) => {
+router.post('/', requireAuth, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    // 1. Extract text from the PDF buffer
-    const pdfData = await pdfParse(req.file.buffer);
+    // 1. Parse PDF using the NEW API syntax
+    const parser = new PDFParse({ data: req.file.buffer });
+    const pdfData = await parser.getText();
     const extractedText = pdfData.text;
 
-    // 2. Save document metadata to MongoDB
+    // 2. Initialize entry in MongoDB
     const newDocument = new Document({
       userId: req.userId,
       fileName: req.file.originalname,
       status: 'processing'
     });
-    
     await newDocument.save();
 
-    // 3. Trigger Gemini Analysis Asynchronously or Await it
-    // We await it here so the client gets immediate results
+    // 3. Trigger Gemini Analysis Asynchronously
     const aiAnalysis = await analyzeFinancialText(extractedText);
 
     // 4. Update the document with AI findings
@@ -47,13 +43,6 @@ router.post('/', upload.single('file'), async (req, res) => {
       message: 'Document audited successfully by Gemini AI',
       document: newDocument
     });
-
-    // res.status(200).json({
-    //   message: 'File parsed successfully',
-    //   documentId: newDocument._id,
-    //   pages: pdfData.numpages,
-    //   textPreview: extractedText.substring(0, 200) + '...' // Send back a preview
-    // });
 
   } catch (error) {
     console.error('Upload Endpoint Error:', error);

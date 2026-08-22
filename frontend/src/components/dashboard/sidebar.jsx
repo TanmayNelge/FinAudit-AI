@@ -13,11 +13,11 @@ import {
 import { cn } from '@/lib/utils'
 
 const primaryNav = [
-  { label: 'Overview', icon: LayoutDashboard, badge: null },
-  { label: 'Documents', icon: FileText, badge: '128' },
-  { label: 'Upload Queue', icon: UploadCloud, badge: '3' },
-  { label: 'Flagged Items', icon: AlertTriangle, badge: '7' },
-  { label: 'Audit Trail', icon: ClipboardList, badge: null },
+  { label: 'Overview', icon: LayoutDashboard },
+  { label: 'Documents', icon: FileText },
+  { label: 'Upload Queue', icon: UploadCloud },
+  { label: 'Flagged Items', icon: AlertTriangle },
+  { label: 'Audit Trail', icon: ClipboardList },
 ]
 
 const secondaryNav = [
@@ -26,7 +26,14 @@ const secondaryNav = [
   { label: 'Support', icon: LifeBuoy },
 ]
 
-export function Sidebar() {
+const getInitials = (name) => {
+  if (!name) return 'FA'
+  const parts = name.trim().split(' ')
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+  return name.slice(0, 2).toUpperCase()
+}
+
+export function Sidebar({ user }) {
   const [active, setActive] = useState('Overview')
 
   return (
@@ -37,10 +44,10 @@ export function Sidebar() {
         </div>
         <div className="flex flex-col leading-tight">
           <span className="text-sm font-semibold text-sidebar-foreground">
-            Sentinel
+            FinAudit AI
           </span>
           <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Compliance v4.1
+            Pipeline v1.0
           </span>
         </div>
       </div>
@@ -66,18 +73,6 @@ export function Sidebar() {
             >
               <Icon className="size-4 shrink-0" aria-hidden="true" />
               <span className="flex-1 text-left">{item.label}</span>
-              {item.badge && (
-                <span
-                  className={cn(
-                    'rounded-full px-1.5 py-0.5 font-mono text-[10px]',
-                    isActive
-                      ? 'bg-primary/20 text-primary'
-                      : 'bg-muted text-muted-foreground',
-                  )}
-                >
-                  {item.badge}
-                </span>
-              )}
             </button>
           )
         })}
@@ -108,15 +103,15 @@ export function Sidebar() {
 
       <div className="border-t border-sidebar-border p-3">
         <div className="flex items-center gap-3 rounded-md px-2 py-2">
-          <div className="flex size-8 items-center justify-center rounded-full bg-secondary font-mono text-xs font-semibold text-secondary-foreground">
-            AW
+          <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 font-mono text-xs font-semibold text-primary">
+            {getInitials(user?.name)}
           </div>
           <div className="flex min-w-0 flex-col leading-tight">
             <span className="truncate text-sm font-medium text-sidebar-foreground">
-              A. Whitmore
+              {user?.name || 'Financial Analyst'}
             </span>
             <span className="truncate text-xs text-muted-foreground">
-              Compliance Officer
+              {user?.email || 'Analyst'}
             </span>
           </div>
         </div>

@@ -1,26 +1,33 @@
-const { GoogleGenAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 async function analyzeFinancialText(text) {
   try {
-    // Using the flash model for blazing-fast document analysis
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not defined in backend/.env file.');
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    // Using gemini-2.5-flash model for document analysis
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      generationConfig: { responseMimeType: 'application/json' }
+    });
 
     const prompt = `
       You are an expert financial compliance auditor. Analyze the following extracted text from a financial document.
       Identify any compliance issues, regulatory risks, or missing mandatory clauses.
       
-      You MUST respond with a valid JSON object ONLY. Do not include markdown code blocks (like \`\`\`json) or conversational text.
+      You MUST respond with a valid JSON object ONLY.
       
       The JSON structure must match this exactly:
       {
-        "complianceScore": 85, // An integer score from 0 to 100
+        "complianceScore": 85,
         "flaggedIssues": [
           {
             "clause": "Name of the section or missing clause",
             "reason": "Detailed description of why this is a non-compliance risk",
-            "severity": "High" // Must be exactly 'High', 'Medium', or 'Low'
+            "severity": "High"
           }
         ]
       }
@@ -30,8 +37,11 @@ async function analyzeFinancialText(text) {
     `;
 
     const result = await model.generateContent(prompt);
-    const responseText = result.response.text().trim();
-    
+    let responseText = result.response.text().trim();
+    if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```(json)?\n?/, '').replace(/\n?```$/, '').trim();
+    }
+
     return JSON.parse(responseText);
   } catch (error) {
     console.error('Gemini AI Service Error:', error);

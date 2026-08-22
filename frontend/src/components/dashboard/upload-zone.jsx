@@ -44,6 +44,7 @@ export function UploadZone() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        withCredentials: true,
         // Track actual HTTP progress
         onUploadProgress: (progressEvent) => {
           const percentage = Math.round((progressEvent.loaded * 100) / progressEvent.total)

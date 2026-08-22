@@ -1,28 +1,29 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const authRoutes = require('./src/routes/authRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
 const documentRoutes = require('./src/routes/documentRoutes');
 const analyticsRoutes = require('./src/routes/analyticsRoutes');
 const cookieParser = require('cookie-parser');
 
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: CLIENT_URL,
   credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
 
 // Database Connection
-mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27016/finaudit')
+mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/finaudit')
   .then(() => console.log('✅ MongoDB Connected Safely'))
   .catch(err => console.error('Database connection error:', err));
 
@@ -51,10 +52,4 @@ app.use((err, req, res, next) => {
 // Start Server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-});
-
-// Global Error Handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal Server Error' });
 });
