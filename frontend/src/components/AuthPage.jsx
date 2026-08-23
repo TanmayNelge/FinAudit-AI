@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
+import { api } from '@/lib/api.js';
 import { Mail, Lock, User, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
-
-axios.defaults.withCredentials = true;
 
 export function AuthPage({ onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -28,7 +26,7 @@ export function AuthPage({ onLoginSuccess }) {
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
 
     try {
-      const response = await axios.post(`http://localhost:5000${endpoint}`, formData);
+      const response = await api.post(endpoint, formData);
       
       // Pass the user data back to App.jsx to unlock the dashboard
       onLoginSuccess(response.data.user);

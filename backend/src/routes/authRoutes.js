@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { requireAuth } = require('../middleware/authMiddleware');
 
 // POST: Register User
 router.post('/register', async (req, res) => {
@@ -68,6 +69,17 @@ router.post('/login', async (req, res) => {
 // POST: Logout
 router.post('/logout', (req, res) => {
   res.clearCookie('token').status(200).json({ message: 'Logged out successfully' });
+});
+
+router.get('/me', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+    if (!user) return res.status(401).json({ error: 'User not found' });
+
+    res.status(200).json({ user: { name: user.name, email: user.email, role: user.role } });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch current user' });
+  }
 });
 
 module.exports = router;

@@ -1,6 +1,6 @@
-import { Search, Bell } from 'lucide-react'
+import { Search, Bell, LogOut } from 'lucide-react'
 
-export function Topbar() {
+export function Topbar({ user, onLogout, searchTerm = '', onSearchChange }) {
   return (
     <header className="flex h-16 shrink-0 items-center gap-4 border-b border-border bg-background/80 px-6 backdrop-blur">
       <div>
@@ -22,6 +22,8 @@ export function Topbar() {
             type="search"
             placeholder="Search documents…"
             aria-label="Search documents"
+            value={searchTerm}
+            onChange={(e) => onSearchChange?.(e.target.value)}
             className="h-9 w-64 rounded-md border border-input bg-card pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
           />
         </div>
@@ -41,6 +43,16 @@ export function Topbar() {
             All systems operational
           </span>
         </div>
+
+        <button
+          type="button"
+          onClick={onLogout}
+          aria-label={`Log out${user?.name ? ` of ${user.name}'s account` : ''}`}
+          className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <LogOut className="size-3.5" aria-hidden="true" />
+          <span className="hidden sm:inline">Log out</span>
+        </button>
       </div>
     </header>
   )

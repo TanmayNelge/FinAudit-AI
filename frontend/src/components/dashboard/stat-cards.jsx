@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api.js';
 import { FileText, Activity, AlertOctagon, TrendingUp, Loader2 } from 'lucide-react';
 
 export function StatCards() {
@@ -9,13 +9,16 @@ export function StatCards() {
     criticalAlerts: 0
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const fetchMetrics = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/analytics');
+      const response = await api.get('/api/analytics');
       setMetrics(response.data);
+      setError('');
     } catch (error) {
       console.error('Failed to fetch analytics', error);
+      setError('Unable to load metrics right now.');
     } finally {
       setLoading(false);
     }
@@ -33,7 +36,7 @@ export function StatCards() {
       title: 'Total Audits Processed',
       value: loading ? <Loader2 className="size-5 animate-spin" /> : metrics.totalAudited,
       icon: FileText,
-      trend: '+12% from last week',
+      trend: 'All documents ever uploaded',
       color: 'text-blue-500',
       bg: 'bg-blue-500/10'
     },
@@ -56,7 +59,11 @@ export function StatCards() {
   ];
 
   return (
-    <div className="grid gap-6 md:grid-cols-3">
+    <div className="flex flex-col gap-3">
+      {error && (
+        <p className="text-xs text-destructive">{error}</p>
+      )}
+      <div className="grid gap-6 md:grid-cols-3">
       {cards.map((card, i) => (
         <div key={i} className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <div className="flex items-center justify-between">
@@ -76,6 +83,7 @@ export function StatCards() {
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }
