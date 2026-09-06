@@ -1,7 +1,25 @@
-import { useCallback, useRef, useState } from 'react'
-import { UploadCloud, FileText, X, CheckCircle2, Lock, AlertCircle } from 'lucide-react'
-import axios from 'axios'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  UploadCloud,
+  FileText,
+  X,
+  CheckCircle2,
+  Lock,
+  AlertCircle,
+  Loader2,
+  Check,
+  RotateCw,
+  ArrowRight,
+} from 'lucide-react'
+import { api } from '@/lib/api.js'
 import { cn } from '@/lib/utils'
+
+const MAX_FILE_SIZE = 25 * 1024 * 1024
+
+// Stages shown while a document moves through the compliance pipeline.
+const PIPELINE_STAGES = ['Processing', 'Extracting text', 'Analyzing compliance', 'Generating report']
+const STAGE_TICK_MS = 2200
 
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`
@@ -9,65 +27,111 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export function UploadZone() {
+function isPdf(file) {
+  return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+}
+
+export function UploadZone({ onUploadComplete }) {
   const [isDragging, setIsDragging] = useState(false)
   const [uploads, setUploads] = useState([])
   const inputRef = useRef(null)
+  const navigate = useNavigate()
 
-  const startUpload = useCallback((files) => {
-    const pdfs = Array.from(files).filter(
-      (f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'),
-    )
+  // Keep the latest callback without re-creating the upload handlers.
+  const onUploadCompleteRef = useRef(onUploadComplete)
+  useEffect(() => {
+    onUploadCompleteRef.current = onUploadComplete
+  }, [onUploadComplete])
 
-    pdfs.forEach((file) => {
-      const id = `${file.name}-${Date.now()}-${Math.random()}`
-      
-      // 1. Insert file into active tracking array
-      setUploads((prev) => [
-        {
-          id,
-          name: file.name,
-          size: formatSize(file.size),
-          progress: 0,
-          done: false,
-          error: null,
-        },
-        ...prev,
-      ])
+  const updateItem = (id, patch) =>
+    setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)))
 
-      // 2. Prepare multipart data payload
-      const formData = new FormData()
-      formData.append('file', file)
+  const runUpload = useCallback((file, itemId) => {
+    const formData = new FormData()
+    formData.append('file', file)
 
-      // 3. Fire real Axios request to Express server
-      axios.post('http://localhost:5000/api/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        withCredentials: true,
-        // Track actual HTTP progress
+    api
+      .post('/api/upload', formData, {
+        // Track actual HTTP progress for the raw transfer.
         onUploadProgress: (progressEvent) => {
+          if (!progressEvent.total) return
           const percentage = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-          setUploads((prev) =>
-            prev.map((u) => (u.id === id ? { ...u, progress: percentage } : u))
-          )
+          if (percentage >= 100) {
+            // Transfer finished — the backend is now running the analysis.
+            updateItem(itemId, { phase: 'analyzing', stageIndex: 0 })
+          } else {
+            updateItem(itemId, { progress: percentage })
+          }
         },
       })
       .then((response) => {
-        // Handle successful API response
-        setUploads((prev) =>
-          prev.map((u) => (u.id === id ? { ...u, done: true, progress: 100 } : u))
-        )
+        const doc = response.data.document
+        updateItem(itemId, {
+          phase: 'done',
+          progress: 100,
+          documentId: doc?._id || null,
+          error: null,
+        })
+        onUploadCompleteRef.current?.()
       })
       .catch((err) => {
-        // Capture specific error responses or connection drops
-        const errorMessage = err.response?.data?.error || 'Upload failed'
-        setUploads((prev) =>
-          prev.map((u) => (u.id === id ? { ...u, error: errorMessage } : u))
-        )
+        const errorMessage = err.response?.data?.error || 'Upload failed. Please try again.'
+        updateItem(itemId, { phase: 'error', error: errorMessage })
       })
-    })
   }, [])
+
+  const startUpload = useCallback(
+    (files) => {
+      Array.from(files).forEach((file) => {
+        const id = `${file.name}-${Date.now()}-${Math.random()}`
+        const base = {
+          id,
+          name: file.name,
+          size: formatSize(file.size),
+          file,
+          phase: 'uploading',
+          progress: 0,
+          stageIndex: 0,
+          error: null,
+          documentId: null,
+        }
+
+        if (!isPdf(file)) {
+          setUploads((prev) => [
+            { ...base, file: null, phase: 'error', error: 'Only PDF files are supported.' },
+            ...prev,
+          ])
+          return
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          setUploads((prev) => [
+            { ...base, file: null, phase: 'error', error: 'File exceeds the 25 MB size limit.' },
+            ...prev,
+          ])
+          return
+        }
+
+        setUploads((prev) => [base, ...prev])
+        runUpload(file, id)
+      })
+    },
+    [runUpload],
+  )
+
+  // Advance the "in analysis" stage indicator while the backend is working.
+  useEffect(() => {
+    if (!uploads.some((u) => u.phase === 'analyzing')) return
+    const interval = setInterval(() => {
+      setUploads((prev) =>
+        prev.map((u) =>
+          u.phase === 'analyzing' && u.stageIndex < PIPELINE_STAGES.length - 1
+            ? { ...u, stageIndex: u.stageIndex + 1 }
+            : u,
+        ),
+      )
+    }, STAGE_TICK_MS)
+    return () => clearInterval(interval)
+  }, [uploads])
 
   const onDrop = useCallback(
     (e) => {
@@ -80,6 +144,17 @@ export function UploadZone() {
 
   const removeUpload = (id) =>
     setUploads((prev) => prev.filter((u) => u.id !== id))
+
+  const retryUpload = (id, file) => {
+    updateItem(id, {
+      phase: 'uploading',
+      progress: 0,
+      stageIndex: 0,
+      error: null,
+      documentId: null,
+    })
+    runUpload(file, id)
+  }
 
   return (
     <section className="rounded-lg border border-border bg-card">
@@ -138,7 +213,7 @@ export function UploadZone() {
             <span className="text-primary underline underline-offset-2">
               browse from your device
             </span>{' '}
-            · Max 25 MB per file
+            · PDF only · Max 25 MB per file
           </p>
           <input
             ref={inputRef}
@@ -159,60 +234,127 @@ export function UploadZone() {
               <li
                 key={u.id}
                 className={cn(
-                  "flex items-center gap-3 rounded-md border bg-background px-3 py-2.5",
-                  u.error ? "border-destructive/30 bg-destructive/5" : "border-border"
+                  'rounded-md border bg-background px-3 py-2.5',
+                  u.phase === 'error'
+                    ? 'border-destructive/30 bg-destructive/5'
+                    : u.phase === 'done'
+                      ? 'border-emerald-500/20'
+                      : 'border-border',
                 )}
               >
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-secondary text-muted-foreground">
-                  <FileText className="size-4" aria-hidden="true" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm text-foreground">
-                      {u.name}
-                    </span>
-                    <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                      {u.size}
-                    </span>
+                <div className="flex items-center gap-3">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-secondary text-muted-foreground">
+                    {u.phase === 'done' ? (
+                      <CheckCircle2 className="size-4 text-emerald-500" aria-hidden="true" />
+                    ) : u.phase === 'error' ? (
+                      <AlertCircle className="size-4 text-destructive" aria-hidden="true" />
+                    ) : (
+                      <FileText className="size-4" aria-hidden="true" />
+                    )}
                   </div>
-                  
-                  {u.error ? (
-                    <p className="text-xs text-destructive mt-1 flex items-center gap-1">
-                      <AlertCircle className="size-3" /> {u.error}
-                    </p>
-                  ) : (
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className={cn(
-                            'h-full rounded-full transition-all duration-300',
-                            u.done ? 'bg-emerald-500' : 'bg-primary',
-                          )}
-                          style={{ width: `${u.progress}%` }}
-                        />
-                      </div>
-                      <span className="w-10 shrink-0 text-right font-mono text-[10px] text-muted-foreground">
-                        {Math.round(u.progress)}%
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm text-foreground">
+                        {u.name}
+                      </span>
+                      <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                        {u.size}
                       </span>
                     </div>
-                  )}
+
+                    {u.phase === 'uploading' && (
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all duration-300"
+                            style={{ width: `${u.progress}%` }}
+                          />
+                        </div>
+                        <span className="w-16 shrink-0 text-right font-mono text-[10px] text-muted-foreground">
+                          Uploading {Math.round(u.progress)}%
+                        </span>
+                      </div>
+                    )}
+
+                    {u.phase === 'analyzing' && (
+                      <div className="mt-2 flex flex-col gap-1">
+                        {PIPELINE_STAGES.map((stage, index) => {
+                          const isCurrent = index === u.stageIndex
+                          const isDone = index < u.stageIndex
+                          return (
+                            <span
+                              key={stage}
+                              className={cn(
+                                'flex items-center gap-1.5 text-[11px]',
+                                isCurrent
+                                  ? 'text-foreground'
+                                  : isDone
+                                    ? 'text-primary'
+                                    : 'text-muted-foreground/60',
+                              )}
+                            >
+                              {isCurrent ? (
+                                <Loader2 className="size-3 animate-spin" aria-hidden="true" />
+                              ) : isDone ? (
+                                <Check className="size-3" aria-hidden="true" />
+                              ) : (
+                                <span className="size-3 rounded-full border border-muted-foreground/40" />
+                              )}
+                              {stage}
+                            </span>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {u.phase === 'done' && (
+                      <p className="mt-1 text-xs text-emerald-500">
+                        Analysis complete
+                      </p>
+                    )}
+
+                    {u.phase === 'error' && (
+                      <p className="mt-1 text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle className="size-3" aria-hidden="true" />
+                        {u.error}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-1">
+                    {u.phase === 'done' && u.documentId && (
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/documents/${u.documentId}`)}
+                        className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
+                      >
+                        View analysis
+                        <ArrowRight className="size-3" aria-hidden="true" />
+                      </button>
+                    )}
+                    {u.phase === 'error' && u.file && (
+                      <button
+                        type="button"
+                        onClick={() => retryUpload(u.id, u.file)}
+                        aria-label={`Retry upload of ${u.name}`}
+                        className="flex size-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                      >
+                        <RotateCw className="size-3.5" aria-hidden="true" />
+                      </button>
+                    )}
+                    {u.phase !== 'done' && (
+                      <button
+                        type="button"
+                        onClick={() => removeUpload(u.id)}
+                        aria-label={`Remove ${u.name} from the list`}
+                        className="flex size-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                      >
+                        <X className="size-4" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                
-                {u.done ? (
-                  <CheckCircle2
-                    className="size-4 shrink-0 text-emerald-500"
-                    aria-label="Upload complete"
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => removeUpload(u.id)}
-                    aria-label={`Cancel upload of ${u.name}`}
-                    className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                  >
-                    <X className="size-4" aria-hidden="true" />
-                  </button>
-                )}
               </li>
             ))}
           </ul>
