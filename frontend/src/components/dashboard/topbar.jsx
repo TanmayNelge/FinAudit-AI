@@ -1,14 +1,36 @@
+import { useLocation } from 'react-router-dom'
 import { Search, Bell, LogOut } from 'lucide-react'
 
+const pageMeta = {
+  '/dashboard': { title: 'Compliance Overview', description: 'Monitor document reviews and regulatory status' },
+  '/documents': { title: 'Documents', description: 'Review uploaded documents and compliance scores' },
+  '/upload': { title: 'Upload Queue', description: 'Upload PDFs for compliance analysis' },
+  '/flagged-items': { title: 'Flagged Items', description: 'Compliance risks detected across documents' },
+  '/audit-history': { title: 'Audit Trail', description: 'Chronological ledger of compliance analyses' },
+  '/team': { title: 'Team', description: 'Manage your compliance team' },
+  '/settings': { title: 'Settings', description: 'Configure workspace preferences' },
+  '/profile': { title: 'Profile', description: 'Manage your account information' },
+  '/support': { title: 'Support', description: 'Get help with FinAudit AI' },
+}
+
+const getMeta = (pathname) => {
+  if (Object.hasOwn(pageMeta, pathname)) return pageMeta[pathname]
+  if (pathname.startsWith('/documents/')) return { title: 'Document Analysis', description: 'Detailed compliance review' }
+  return { title: 'FinAudit AI', description: 'Compliance & document audit platform' }
+}
+
 export function Topbar({ user, onLogout, searchTerm = '', onSearchChange }) {
+  const { pathname } = useLocation()
+  const meta = getMeta(pathname)
+
   return (
     <header className="flex h-16 shrink-0 items-center gap-4 border-b border-border bg-background/80 px-6 backdrop-blur">
       <div>
         <h1 className="text-base font-semibold text-foreground">
-          Compliance Overview
+          {meta.title}
         </h1>
         <p className="text-xs text-muted-foreground">
-          Monitor document reviews and regulatory status
+          {meta.description}
         </p>
       </div>
 

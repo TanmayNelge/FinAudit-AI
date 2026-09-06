@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { NavLink } from 'react-router-dom'
 import {
   ShieldCheck,
   LayoutDashboard,
@@ -13,17 +13,17 @@ import {
 import { cn } from '@/lib/utils'
 
 const primaryNav = [
-  { label: 'Overview', icon: LayoutDashboard },
-  { label: 'Documents', icon: FileText },
-  { label: 'Upload Queue', icon: UploadCloud },
-  { label: 'Flagged Items', icon: AlertTriangle },
-  { label: 'Audit Trail', icon: ClipboardList },
+  { label: 'Overview', icon: LayoutDashboard, to: '/dashboard' },
+  { label: 'Documents', icon: FileText, to: '/documents' },
+  { label: 'Upload Queue', icon: UploadCloud, to: '/upload' },
+  { label: 'Flagged Items', icon: AlertTriangle, to: '/flagged-items' },
+  { label: 'Audit Trail', icon: ClipboardList, to: '/audit-history' },
 ]
 
 const secondaryNav = [
-  { label: 'Team', icon: Users },
-  { label: 'Settings', icon: Settings },
-  { label: 'Support', icon: LifeBuoy },
+  { label: 'Team', icon: Users, to: '/team' },
+  { label: 'Settings', icon: Settings, to: '/settings' },
+  { label: 'Support', icon: LifeBuoy, to: '/support' },
 ]
 
 const getInitials = (name) => {
@@ -34,7 +34,13 @@ const getInitials = (name) => {
 }
 
 export function Sidebar({ user }) {
-  const [active, setActive] = useState('Overview')
+  const linkClassName = ({ isActive }) =>
+    cn(
+      'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+      isActive
+        ? 'bg-sidebar-accent text-sidebar-foreground'
+        : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
+    )
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
@@ -58,22 +64,16 @@ export function Sidebar({ user }) {
         </p>
         {primaryNav.map((item) => {
           const Icon = item.icon
-          const isActive = active === item.label
           return (
-            <button
-              key={item.label}
-              onClick={() => setActive(item.label)}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
-                isActive
-                  ? 'bg-sidebar-accent text-sidebar-foreground'
-                  : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
-              )}
-              aria-current={isActive ? 'page' : undefined}
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={linkClassName}
+              aria-label={item.label}
             >
               <Icon className="size-4 shrink-0" aria-hidden="true" />
               <span className="flex-1 text-left">{item.label}</span>
-            </button>
+            </NavLink>
           )
         })}
 
@@ -82,27 +82,25 @@ export function Sidebar({ user }) {
         </p>
         {secondaryNav.map((item) => {
           const Icon = item.icon
-          const isActive = active === item.label
           return (
-            <button
-              key={item.label}
-              onClick={() => setActive(item.label)}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
-                isActive
-                  ? 'bg-sidebar-accent text-sidebar-foreground'
-                  : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
-              )}
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={linkClassName}
+              aria-label={item.label}
             >
               <Icon className="size-4 shrink-0" aria-hidden="true" />
               <span>{item.label}</span>
-            </button>
+            </NavLink>
           )
         })}
       </nav>
 
       <div className="border-t border-sidebar-border p-3">
-        <div className="flex items-center gap-3 rounded-md px-2 py-2">
+        <NavLink
+          to="/profile"
+          className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-sidebar-accent/60"
+        >
           <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 font-mono text-xs font-semibold text-primary">
             {getInitials(user?.name)}
           </div>
@@ -114,7 +112,7 @@ export function Sidebar({ user }) {
               {user?.email || 'Analyst'}
             </span>
           </div>
-        </div>
+        </NavLink>
       </div>
     </aside>
   )
