@@ -109,9 +109,7 @@ export default function App() {
           />
           <Route
             path="/documents"
-            element={
-              <DocumentsPage searchTerm={searchTerm} refreshSignal={refreshSignal} />
-            }
+            element={<DocumentsPage refreshSignal={refreshSignal} />}
           />
           <Route path="/documents/:id" element={<DocumentDetailsPage />} />
           <Route
