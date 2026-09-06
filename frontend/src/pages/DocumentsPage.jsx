@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '@/lib/api.js'
 import { cn } from '@/lib/utils'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog.jsx'
 import {
   FileText,
   Search,
@@ -9,6 +10,7 @@ import {
   Inbox,
   RefreshCw,
   Eye,
+  Trash2,
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
@@ -161,6 +163,9 @@ export function DocumentsPage({ refreshSignal = 0 }) {
   const [sortKey, setSortKey] = useState('createdAt')
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   const fetchDocuments = async () => {
     setLoading(true)
@@ -260,6 +265,40 @@ export function DocumentsPage({ refreshSignal = 0 }) {
   }
 
   const hasFilters = query.trim() !== '' || statusFilter !== 'all'
+
+  const requestDelete = (doc) => {
+    setDeleteTarget(doc)
+    setDeleteError('')
+  }
+
+  const closeDelete = () => {
+    if (deleting) return
+    setDeleteTarget(null)
+    setDeleteError('')
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget || deleting) return
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      await api.delete(`/api/documents/${deleteTarget._id}`)
+      setDocuments((prev) => prev.filter((doc) => doc._id !== deleteTarget._id))
+      setDeleteTarget(null)
+    } catch (err) {
+      console.error('Failed to delete document:', err)
+      const status = err.response?.status
+      if (status === 404) {
+        setDeleteError('This document no longer exists. It may have already been deleted.')
+      } else if (status === 401) {
+        setDeleteError('Your session has expired. Please log in again.')
+      } else {
+        setDeleteError('Unable to delete this document. Please try again.')
+      }
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -506,13 +545,23 @@ export function DocumentsPage({ refreshSignal = 0 }) {
                           {formatDate(doc.createdAt)}
                         </td>
                         <td className="p-4 text-right">
-                          <Link
-                            to={`/documents/${doc._id}`}
-                            aria-label={`View analysis for ${doc.fileName}`}
-                            className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-                          >
-                            <Eye className="size-4" aria-hidden="true" />
-                          </Link>
+                          <div className="flex items-center justify-end gap-1">
+                            <Link
+                              to={`/documents/${doc._id}`}
+                              aria-label={`View analysis for ${doc.fileName}`}
+                              className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                            >
+                              <Eye className="size-4" aria-hidden="true" />
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => requestDelete(doc)}
+                              aria-label={`Delete ${doc.fileName}`}
+                              className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
+                            >
+                              <Trash2 className="size-4" aria-hidden="true" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     )
@@ -556,6 +605,22 @@ export function DocumentsPage({ refreshSignal = 0 }) {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={closeDelete}
+        title="Delete document?"
+        description={
+          deleteTarget
+            ? `This will permanently remove "${deleteTarget.fileName}" and its associated compliance analysis. This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete document"
+        variant="danger"
+        confirming={deleting}
+        error={deleteError}
+        onConfirm={confirmDelete}
+      />
     </div>
   )
 }
