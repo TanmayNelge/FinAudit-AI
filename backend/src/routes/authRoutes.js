@@ -76,9 +76,55 @@ router.get('/me', requireAuth, async (req, res) => {
     const user = await User.findById(req.userId).select('-password');
     if (!user) return res.status(401).json({ error: 'User not found' });
 
-    res.status(200).json({ user: { name: user.name, email: user.email, role: user.role } });
+    res.status(200).json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        preferences: user.preferences,
+        createdAt: user.createdAt
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch current user' });
+  }
+});
+
+// PATCH: Update display name and/or notification preferences for the current user
+router.patch('/me', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+    if (!user) return res.status(401).json({ error: 'User not found' });
+
+    const { name, preferences } = req.body || {};
+
+    if (name !== undefined) {
+      const trimmed = typeof name === 'string' ? name.trim() : '';
+      if (!trimmed) return res.status(400).json({ error: 'Name cannot be empty' });
+      user.name = trimmed;
+    }
+
+    if (preferences !== undefined) {
+      const { notifyOnComplete, notifyOnFailed } = preferences;
+      if (typeof notifyOnComplete === 'boolean') user.preferences.notifyOnComplete = notifyOnComplete;
+      if (typeof notifyOnFailed === 'boolean') user.preferences.notifyOnFailed = notifyOnFailed;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        preferences: user.preferences,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update profile' });
   }
 });
 

@@ -4,6 +4,7 @@ const multer = require('multer');
 const { PDFParse } = require('pdf-parse'); // <--- CHANGED: Destructuring the new class
 const Document = require('../models/Document');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 const { analyzeFinancialText } = require('../services/aiService');
 const { requireAuth } = require('../middleware/authMiddleware');
 
@@ -32,6 +33,17 @@ async function createNotification(doc) {
   } else if (doc.status === 'failed') {
     type = 'failed';
     message = `"${doc.fileName}" could not be audited. Review the document and try again.`;
+  }
+
+  // Honour the user's notification preferences for completed/failed events.
+  try {
+    const user = await User.findById(doc.userId);
+    if (user) {
+      if (type === 'completed' && user.preferences?.notifyOnComplete === false) return;
+      if (type === 'failed' && user.preferences?.notifyOnFailed === false) return;
+    }
+  } catch (error) {
+    console.error('Failed to load notification preferences:', error);
   }
 
   try {

@@ -18,6 +18,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['analyst', 'admin'],
     default: 'analyst'
+  },
+  preferences: {
+    notifyOnComplete: {
+      type: Boolean,
+      default: true
+    },
+    notifyOnFailed: {
+      type: Boolean,
+      default: true
+    }
   }
 }, { timestamps: true });
 
