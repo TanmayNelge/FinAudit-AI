@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const { PDFParse } = require('pdf-parse'); // <--- CHANGED: Destructuring the new class
 const Document = require('../models/Document');
+const Notification = require('../models/Notification');
 const { analyzeFinancialText } = require('../services/aiService');
 const { requireAuth } = require('../middleware/authMiddleware');
 
@@ -18,6 +19,27 @@ const upload = multer({
     cb(null, true);
   }
 });
+
+async function createNotification(doc) {
+  let type = 'uploaded';
+  let message = `"${doc.fileName}" was uploaded for compliance analysis.`;
+
+  if (doc.status === 'completed') {
+    type = 'completed';
+    message = doc.complianceScore != null
+      ? `"${doc.fileName}" audit completed with a compliance score of ${doc.complianceScore}/100.`
+      : `"${doc.fileName}" audit completed.`;
+  } else if (doc.status === 'failed') {
+    type = 'failed';
+    message = `"${doc.fileName}" could not be audited. Review the document and try again.`;
+  }
+
+  try {
+    await Notification.create({ userId: doc.userId, type, message, docId: doc._id });
+  } catch (error) {
+    console.error('Failed to create notification:', error);
+  }
+}
 
 router.post('/', requireAuth, (req, res, next) => {
   // Wrap multer so its errors (file too large, wrong type) return clean JSON
@@ -59,6 +81,7 @@ router.post('/', requireAuth, (req, res, next) => {
     if (!extractedText || !extractedText.trim()) {
       newDocument.status = 'failed';
       await newDocument.save();
+      await createNotification(newDocument);
       return res.status(200).json({
         message: 'No extractable text found in this PDF',
         document: newDocument
@@ -72,6 +95,7 @@ router.post('/', requireAuth, (req, res, next) => {
     newDocument.complianceScore = aiAnalysis.complianceScore;
     newDocument.flaggedIssues = aiAnalysis.flaggedIssues;
     await newDocument.save();
+    await createNotification(newDocument);
 
     res.status(200).json({
       message: 'Document audited successfully by Gemini AI',

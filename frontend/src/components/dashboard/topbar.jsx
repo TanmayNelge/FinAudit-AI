@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom'
-import { Search, Bell, LogOut } from 'lucide-react'
+import { Search, LogOut } from 'lucide-react'
+import { NotificationBell } from './notification-bell.jsx'
 
 const pageMeta = {
   '/dashboard': { title: 'Compliance Overview', description: 'Monitor document reviews and regulatory status' },
@@ -50,14 +51,7 @@ export function Topbar({ user, onLogout, searchTerm = '', onSearchChange }) {
           />
         </div>
 
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex size-9 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <Bell className="size-4" aria-hidden="true" />
-          <span className="absolute right-2 top-2 size-1.5 rounded-full bg-warning" />
-        </button>
+        <NotificationBell />
 
         <div className="hidden items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 sm:flex">
           <span className="size-1.5 rounded-full bg-success" />

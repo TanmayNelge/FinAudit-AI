@@ -170,7 +170,9 @@ to check for an existing valid session before showing the login screen.
 - The `role` field on the User model (`analyst` / `admin`) is not yet used
   for authorization — there's no admin-only functionality.
 - There's no way to delete an uploaded document from the registry.
-- The notification bell is decorative; there's no notification data model.
+- The notification bell shows live notifications (completed/failed audits) with
+  an unread badge, mark-as-read, and links to the source document. Notifications
+  are not persisted beyond a read flag — there's no in-app archive view.
 - If the Gemini API call fails, the document is still marked `completed`
   with a fallback score of 50 and a generic flagged issue explaining the
   failure, so it's visible in the registry rather than silently lost —

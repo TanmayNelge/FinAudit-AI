@@ -8,6 +8,7 @@ const authRoutes = require('./src/routes/authRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
 const documentRoutes = require('./src/routes/documentRoutes');
 const analyticsRoutes = require('./src/routes/analyticsRoutes');
+const notificationRoutes = require('./src/routes/notificationRoutes');
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
