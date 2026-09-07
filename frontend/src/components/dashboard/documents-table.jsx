@@ -103,7 +103,7 @@ export function DocumentsTable({ searchTerm = '', refreshSignal = 0 }) {
                         <FileText className="size-4" />
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="font-medium text-foreground truncate max-w-[200px] xl:max-w-[300px]">
+                        <span className="font-medium text-foreground truncate max-w-50 xl:max-w-75">
                           {doc.fileName}
                         </span>
                         <span className="text-[11px] text-muted-foreground">
