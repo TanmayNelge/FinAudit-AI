@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Search, LogOut, UserRound, Settings, ChevronDown } from 'lucide-react'
+import { Search, LogOut, UserRound, Settings, ChevronDown, Menu } from 'lucide-react'
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { NotificationBell } from './notification-bell.jsx'
 
@@ -88,17 +88,26 @@ function UserMenu({ user, onLogout }) {
   )
 }
 
-export function Topbar({ user, onLogout, searchTerm = '', onSearchChange }) {
+export function Topbar({ user, onLogout, searchTerm = '', onSearchChange, onOpenMenu }) {
   const { pathname } = useLocation()
   const meta = getMeta(pathname)
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-4 border-b border-border bg-background/80 px-6 backdrop-blur">
-      <div>
-        <h1 className="text-base font-semibold text-foreground">
+    <header className="flex h-16 shrink-0 items-center gap-4 border-b border-border bg-background/80 px-4 backdrop-blur sm:px-6">
+      <button
+        type="button"
+        onClick={onOpenMenu}
+        aria-label="Open navigation menu"
+        className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 lg:hidden"
+      >
+        <Menu className="size-4" aria-hidden="true" />
+      </button>
+
+      <div className="min-w-0">
+        <h1 className="truncate text-base font-semibold text-foreground">
           {meta.title}
         </h1>
-        <p className="text-xs text-muted-foreground">
+        <p className="hidden text-xs text-muted-foreground sm:block">
           {meta.description}
         </p>
       </div>

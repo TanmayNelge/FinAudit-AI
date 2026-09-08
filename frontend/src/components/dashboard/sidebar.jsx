@@ -33,7 +33,7 @@ const getInitials = (name) => {
   return name.slice(0, 2).toUpperCase()
 }
 
-export function Sidebar({ user }) {
+export function Sidebar({ user, onNavigate }) {
   const linkClassName = ({ isActive }) =>
     cn(
       'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
@@ -70,6 +70,7 @@ export function Sidebar({ user }) {
               to={item.to}
               className={linkClassName}
               aria-label={item.label}
+              onClick={onNavigate}
             >
               <Icon className="size-4 shrink-0" aria-hidden="true" />
               <span className="flex-1 text-left">{item.label}</span>
@@ -88,6 +89,7 @@ export function Sidebar({ user }) {
               to={item.to}
               className={linkClassName}
               aria-label={item.label}
+              onClick={onNavigate}
             >
               <Icon className="size-4 shrink-0" aria-hidden="true" />
               <span>{item.label}</span>
