@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '@/lib/api.js'
 import { cn } from '@/lib/utils'
+import { ErrorState } from '@/components/ui/state.jsx'
 import { Mail, ShieldCheck, KeyRound, UserRound, RefreshCw } from 'lucide-react'
 
 function formatDate(value) {
@@ -102,21 +103,13 @@ export function ProfilePage() {
 
   if (error || !profile) {
     return (
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 py-20 text-center">
-        <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-          <UserRound className="size-6" aria-hidden="true" />
-        </div>
-        <div>
-          <p className="text-sm font-medium text-foreground">Unable to load profile.</p>
-          <p className="mt-1 text-xs text-muted-foreground">{error}</p>
-        </div>
-        <button
-          type="button"
-          onClick={fetchProfile}
-          className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-        >
-          Try again
-        </button>
+      <div className="mx-auto flex max-w-6xl flex-col">
+        <ErrorState
+          icon={UserRound}
+          title="Unable to load profile."
+          message={error}
+          onRetry={fetchProfile}
+        />
       </div>
     )
   }

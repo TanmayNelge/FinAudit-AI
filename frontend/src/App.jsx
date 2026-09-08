@@ -14,6 +14,7 @@ import { SettingsPage } from '@/pages/SettingsPage.jsx';
 import { ProfilePage } from '@/pages/ProfilePage.jsx';
 import { SupportPage } from '@/pages/SupportPage.jsx';
 import { NotFoundPage } from '@/pages/NotFoundPage.jsx';
+import { ToastProvider } from '@/components/ui/toast.jsx';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
@@ -61,8 +62,9 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
         <Route
           path="/login"
           element={
@@ -124,7 +126,8 @@ export default function App() {
           <Route path="/support" element={<SupportPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }

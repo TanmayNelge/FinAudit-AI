@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog.jsx'
+import { useToast } from '@/components/ui/use-toast.js'
 
 function formatDate(value) {
   const date = new Date(value)
@@ -27,6 +28,7 @@ function formatDate(value) {
 }
 
 export function DocumentsTable({ searchTerm = '', refreshSignal = 0 }) {
+  const { toast } = useToast()
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -112,6 +114,7 @@ export function DocumentsTable({ searchTerm = '', refreshSignal = 0 }) {
       setDocuments((prev) => prev.filter((doc) => doc._id !== deleteTarget._id))
       setExpandedId(null)
       setDeleteTarget(null)
+      toast.success(`"${deleteTarget.fileName}" was deleted.`)
     } catch (err) {
       console.error('Failed to delete document:', err)
       const status = err.response?.status
@@ -122,6 +125,7 @@ export function DocumentsTable({ searchTerm = '', refreshSignal = 0 }) {
       } else {
         setDeleteError('Unable to delete this document. Please try again.')
       }
+      toast.error('Unable to delete this document.')
     } finally {
       setDeleting(false)
     }

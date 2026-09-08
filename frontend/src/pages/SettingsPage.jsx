@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '@/lib/api.js'
 import { cn } from '@/lib/utils'
 import { Switch as SwitchPrimitive } from '@base-ui/react/switch'
+import { useToast } from '@/components/ui/use-toast.js'
+import { ErrorState } from '@/components/ui/state.jsx'
 import {
   Loader2,
   Save,
@@ -88,6 +90,7 @@ function SettingsSkeleton() {
 }
 
 export function SettingsPage() {
+  const { toast } = useToast()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -148,6 +151,7 @@ export function SettingsPage() {
       setName(response.data.user.name)
       setSaved(true)
       setDirty(false)
+      toast.success('Settings saved.')
     } catch (err) {
       console.error('Failed to save settings:', err)
       setSaveError(
@@ -155,6 +159,7 @@ export function SettingsPage() {
           ? err.response.data?.error || 'Please check the values you entered.'
           : 'Unable to save your settings. Please try again.',
       )
+      toast.error('Unable to save your settings.')
     } finally {
       setSaving(false)
     }
@@ -164,21 +169,13 @@ export function SettingsPage() {
 
   if (error || !profile) {
     return (
-      <div className="mx-auto flex max-w-4xl flex-col items-center gap-3 py-20 text-center">
-        <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-          <XCircle className="size-6" aria-hidden="true" />
-        </div>
-        <div>
-          <p className="text-sm font-medium text-foreground">Unable to load settings.</p>
-          <p className="mt-1 text-xs text-muted-foreground">{error}</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-        >
-          Try again
-        </button>
+      <div className="mx-auto flex max-w-4xl flex-col">
+        <ErrorState
+          icon={XCircle}
+          title="Unable to load settings."
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     )
   }

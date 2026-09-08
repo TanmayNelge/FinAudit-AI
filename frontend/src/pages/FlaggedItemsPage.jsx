@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '@/lib/api.js'
 import { cn } from '@/lib/utils'
+import { ErrorState, EmptyState } from '@/components/ui/state.jsx'
 import {
   Search,
   SearchX,
@@ -295,22 +296,12 @@ export function FlaggedItemsPage() {
 
         {/* Error */}
         {error && (
-          <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-              <SearchX className="size-6" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Unable to load flagged items.</p>
-              <p className="mt-1 text-xs text-muted-foreground">{error}</p>
-            </div>
-            <button
-              type="button"
-              onClick={fetchFlagged}
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              Try again
-            </button>
-          </div>
+          <ErrorState
+            icon={SearchX}
+            title="Unable to load flagged items."
+            message={error}
+            onRetry={fetchFlagged}
+          />
         )}
 
         {/* Loading */}
@@ -337,17 +328,11 @@ export function FlaggedItemsPage() {
 
         {/* Empty (no issues at all) */}
         {!error && !loading && flagged.length === 0 && (
-          <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
-              <Inbox className="size-6" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">No flagged items</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                No compliance risks have been detected yet. Upload a document to begin auditing.
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title="No flagged items"
+            description="No compliance risks have been detected yet. Upload a document to begin auditing."
+          />
         )}
 
         {/* Table */}

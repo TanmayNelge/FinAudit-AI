@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '@/lib/api.js'
 import { cn } from '@/lib/utils'
+import { ErrorState, EmptyState } from '@/components/ui/state.jsx'
 import {
   Search,
   SearchX,
@@ -316,22 +317,12 @@ export function AuditHistoryPage() {
 
         {/* Error */}
         {error && (
-          <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-              <SearchX className="size-6" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Unable to load audit history.</p>
-              <p className="mt-1 text-xs text-muted-foreground">{error}</p>
-            </div>
-            <button
-              type="button"
-              onClick={fetchDocs}
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              Try again
-            </button>
-          </div>
+          <ErrorState
+            icon={SearchX}
+            title="Unable to load audit history."
+            message={error}
+            onRetry={fetchDocs}
+          />
         )}
 
         {/* Loading */}
@@ -358,17 +349,11 @@ export function AuditHistoryPage() {
 
         {/* Empty (no events at all) */}
         {!error && !loading && events.length === 0 && (
-          <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-secondary text-muted-foreground">
-              <Inbox className="size-6" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">No audit history</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                No documents have been audited yet. Upload a document to begin.
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title="No audit history"
+            description="No documents have been audited yet. Upload a document to begin."
+          />
         )}
 
         {/* Table */}

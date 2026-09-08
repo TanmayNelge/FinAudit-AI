@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { api } from '@/lib/api.js'
 import { cn } from '@/lib/utils'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog.jsx'
+import { useToast } from '@/components/ui/use-toast.js'
+import { ErrorState, EmptyState } from '@/components/ui/state.jsx'
 import {
   FileText,
   Search,
@@ -155,6 +157,7 @@ function SkeletonRows({ rows = PAGE_SIZE }) {
 }
 
 export function DocumentsPage({ refreshSignal = 0 }) {
+  const { toast } = useToast()
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -285,6 +288,7 @@ export function DocumentsPage({ refreshSignal = 0 }) {
       await api.delete(`/api/documents/${deleteTarget._id}`)
       setDocuments((prev) => prev.filter((doc) => doc._id !== deleteTarget._id))
       setDeleteTarget(null)
+      toast.success(`"${deleteTarget.fileName}" was deleted.`)
     } catch (err) {
       console.error('Failed to delete document:', err)
       const status = err.response?.status
@@ -295,6 +299,7 @@ export function DocumentsPage({ refreshSignal = 0 }) {
       } else {
         setDeleteError('Unable to delete this document. Please try again.')
       }
+      toast.error('Unable to delete this document.')
     } finally {
       setDeleting(false)
     }
@@ -372,22 +377,12 @@ export function DocumentsPage({ refreshSignal = 0 }) {
 
         {/* Body */}
         {error && (
-          <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-              <SearchX className="size-6" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Unable to load documents.</p>
-              <p className="mt-1 text-xs text-muted-foreground">{error}</p>
-            </div>
-            <button
-              type="button"
-              onClick={fetchDocuments}
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              Try again
-            </button>
-          </div>
+          <ErrorState
+            icon={SearchX}
+            title="Unable to load documents."
+            message={error}
+            onRetry={fetchDocuments}
+          />
         )}
 
         {!error && loading && (
@@ -411,24 +406,20 @@ export function DocumentsPage({ refreshSignal = 0 }) {
         )}
 
         {!error && !loading && documents.length === 0 && (
-          <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-secondary text-muted-foreground">
-              <Inbox className="size-6" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">No documents yet</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Upload your first document to begin your compliance audit.
-              </p>
-            </div>
-            <Link
-              to="/upload"
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
-            >
-              <Plus className="size-4" aria-hidden="true" />
-              Upload document
-            </Link>
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title="No documents yet"
+            description="Upload your first document to begin your compliance audit."
+            action={
+              <Link
+                to="/upload"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+              >
+                <Plus className="size-4" aria-hidden="true" />
+                Upload document
+              </Link>
+            }
+          />
         )}
 
         {!error && !loading && documents.length > 0 && (
