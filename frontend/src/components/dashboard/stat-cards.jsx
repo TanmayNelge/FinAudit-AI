@@ -37,15 +37,15 @@ export function StatCards() {
       value: loading ? <Loader2 className="size-5 animate-spin" /> : metrics.totalAudited,
       icon: FileText,
       trend: 'All documents ever uploaded',
-      color: 'text-blue-500',
-      bg: 'bg-blue-500/10'
+      color: 'text-primary',
+      bg: 'bg-primary/10'
     },
     {
       title: 'Average Compliance Score',
       value: loading ? <Loader2 className="size-5 animate-spin" /> : `${metrics.avgScore}/100`,
       icon: Activity,
       trend: metrics.avgScore >= 80 ? 'Optimal Status' : 'Needs Review',
-      color: metrics.avgScore >= 80 ? 'text-emerald-500' : 'text-amber-500',
+      color: metrics.avgScore >= 80 ? 'text-emerald-400' : 'text-amber-400',
       bg: metrics.avgScore >= 80 ? 'bg-emerald-500/10' : 'bg-amber-500/10'
     },
     {
@@ -53,8 +53,8 @@ export function StatCards() {
       value: loading ? <Loader2 className="size-5 animate-spin" /> : metrics.criticalAlerts,
       icon: AlertOctagon,
       trend: 'Documents requiring immediate action',
-      color: metrics.criticalAlerts > 0 ? 'text-rose-500' : 'text-slate-400',
-      bg: metrics.criticalAlerts > 0 ? 'bg-rose-500/10' : 'bg-slate-500/10'
+      color: metrics.criticalAlerts > 0 ? 'text-destructive' : 'text-muted-foreground',
+      bg: metrics.criticalAlerts > 0 ? 'bg-destructive/10' : 'bg-muted'
     }
   ];
 
