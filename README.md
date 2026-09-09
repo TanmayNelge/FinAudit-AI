@@ -168,9 +168,9 @@ Upload PDF (frontend)
    → aiService.analyzeFinancialText() calls Gemini with the extracted text
    → Document updated with complianceScore + flaggedIssues, status "completed"
      (or "failed" if no extractable text)
-   → Frontend polls /api/documents and /api/analytics every 5s
-     (and refetches immediately after its own upload completes)
-     to reflect new results
+   → Frontend refetches documents, analytics and notifications from a single
+     shared polling clock every 5s (and refetches immediately after an own
+     upload completes) to reflect new results
 ```
 
 Authentication is a standard register → login → JWT-in-cookie flow.

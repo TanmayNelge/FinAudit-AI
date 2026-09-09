@@ -4,11 +4,13 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
 import { Sidebar } from '@/components/dashboard/sidebar.jsx'
 import { Topbar } from '@/components/dashboard/topbar.jsx'
+import { PollProvider } from '@/components/ui/poll-provider.jsx'
 
 export function DashboardLayout({ user, onLogout, searchTerm, onSearchChange }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
+    <PollProvider>
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
       <a
         href="#main-content"
@@ -58,5 +60,6 @@ export function DashboardLayout({ user, onLogout, searchTerm, onSearchChange }) 
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
     </div>
+    </PollProvider>
   )
 }

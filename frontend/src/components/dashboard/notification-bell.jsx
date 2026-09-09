@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 import { api } from '@/lib/api.js'
+import { usePollTick } from '@/components/ui/use-polling.js'
 import { cn } from '@/lib/utils'
 import {
   Bell,
@@ -45,41 +46,35 @@ export function NotificationBell() {
   const [unread, setUnread] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const tick = usePollTick()
 
+  // Refetch whenever the shared poll tick advances (every 5s) — no separate timer.
   useEffect(() => {
     let cancelled = false
-    api
-      .get('/api/notifications')
-      .then((response) => {
-        if (!cancelled) {
-          setNotifications(response.data.notifications || [])
-          setUnread(response.data.unread || 0)
-          setError('')
-        }
-      })
-      .catch((err) => {
-        if (cancelled) return
-        console.error('Failed to load notifications:', err)
-        setError('Unable to load notifications.')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    const interval = setInterval(() => {
+    const load = () =>
       api
         .get('/api/notifications')
         .then((response) => {
-          setNotifications(response.data.notifications || [])
-          setUnread(response.data.unread || 0)
-          setError('')
+          if (!cancelled) {
+            setNotifications(response.data.notifications || [])
+            setUnread(response.data.unread || 0)
+            setError('')
+          }
         })
-        .catch(() => {})
-    }, 5000)
+        .catch((err) => {
+          if (cancelled) return
+          console.error('Failed to load notifications:', err)
+          setError('Unable to load notifications.')
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false)
+        })
+
+    load()
     return () => {
       cancelled = true
-      clearInterval(interval)
     }
-  }, [])
+  }, [tick])
 
   const markRead = async (id) => {
     const notification = notifications.find((n) => n._id === id)

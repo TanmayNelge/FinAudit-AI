@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog.jsx'
 import { StatusBadge } from '@/components/ui/status-badge.jsx'
 import { ComplianceScore } from '@/components/ui/compliance-score.jsx'
 import { useToast } from '@/components/ui/use-toast.js'
+import { usePollTick } from '@/components/ui/use-polling.js'
 
 function formatDate(value) {
   const date = new Date(value)
@@ -28,9 +29,10 @@ export function DocumentsTable({ searchTerm = '', refreshSignal = 0 }) {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const tick = usePollTick()
 
-  // Poll the database every 5 seconds to catch live pipeline updates, and
-  // refetch immediately whenever a new upload finishes.
+  // Refetch whenever the shared poll tick advances (every 5s) to catch live
+  // pipeline updates, and refetch immediately when a new upload finishes.
   useEffect(() => {
     let cancelled = false
     const load = () =>
@@ -52,12 +54,10 @@ export function DocumentsTable({ searchTerm = '', refreshSignal = 0 }) {
         })
 
     load()
-    const interval = setInterval(load, 5000)
     return () => {
       cancelled = true
-      clearInterval(interval)
     }
-  }, [refreshSignal])
+  }, [tick, refreshSignal])
 
   const filteredDocuments = useMemo(() => {
     const query = searchTerm.trim().toLowerCase()

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api.js';
+import { usePollTick } from '@/components/ui/use-polling.js';
 import { FileText, Activity, AlertOctagon, TrendingUp, Loader2 } from 'lucide-react';
 
 export function StatCards() {
@@ -10,26 +11,34 @@ export function StatCards() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const tick = usePollTick();
 
-  const fetchMetrics = async () => {
-    try {
-      const response = await api.get('/api/analytics');
-      setMetrics(response.data);
-      setError('');
-    } catch (error) {
-      console.error('Failed to fetch analytics', error);
-      setError('Unable to load metrics right now.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Poll every 5 seconds to keep the numbers live as new documents finish auditing
+  // Refetch whenever the shared poll tick advances (every 5s), keeping the
+  // numbers live as new documents finish auditing — without a second timer.
   useEffect(() => {
-    fetchMetrics();
-    const interval = setInterval(fetchMetrics, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    let cancelled = false;
+
+    const load = () =>
+      api.get('/api/analytics')
+        .then((response) => {
+          if (!cancelled) {
+            setMetrics(response.data);
+            setError('');
+          }
+        })
+        .catch((error) => {
+          if (!cancelled) {
+            console.error('Failed to fetch analytics', error);
+            setError('Unable to load metrics right now.');
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+
+    load();
+    return () => { cancelled = true; };
+  }, [tick]);
 
   const cards = [
     {
