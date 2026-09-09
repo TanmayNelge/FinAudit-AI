@@ -518,6 +518,20 @@ function DocumentDetails({ id }) {
         <div
           role="tablist"
           aria-label="Document analysis sections"
+          onKeyDown={(e) => {
+            const index = TABS.findIndex((tab) => tab.id === activeTab)
+            let next = null
+            if (e.key === 'ArrowRight') next = (index + 1) % TABS.length
+            else if (e.key === 'ArrowLeft') next = (index - 1 + TABS.length) % TABS.length
+            else if (e.key === 'Home') next = 0
+            else if (e.key === 'End') next = TABS.length - 1
+            if (next !== null) {
+              e.preventDefault()
+              const nextId = TABS[next].id
+              setActiveTab(nextId)
+              document.getElementById(`tab-${nextId}`)?.focus()
+            }
+          }}
           className="flex gap-1 overflow-x-auto border-b border-border"
         >
           {TABS.map((tab) => {
@@ -529,9 +543,10 @@ function DocumentDetails({ id }) {
                 id={`tab-${tab.id}`}
                 aria-selected={isActive}
                 aria-controls={`panel-${tab.id}`}
+                tabIndex={isActive ? 0 : -1}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors',
+                  'whitespace-nowrap rounded-t-md border-b-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
                   isActive
                     ? 'border-primary text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground',

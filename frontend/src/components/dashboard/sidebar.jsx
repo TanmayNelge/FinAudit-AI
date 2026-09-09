@@ -36,7 +36,7 @@ const getInitials = (name) => {
 export function Sidebar({ user, onNavigate }) {
   const linkClassName = ({ isActive }) =>
     cn(
-      'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+      'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60',
       isActive
         ? 'bg-sidebar-accent text-sidebar-foreground'
         : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
@@ -58,7 +58,7 @@ export function Sidebar({ user, onNavigate }) {
         </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label="Primary">
         <p className="px-3 pb-1 pt-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           Workspace
         </p>
@@ -101,7 +101,7 @@ export function Sidebar({ user, onNavigate }) {
       <div className="border-t border-sidebar-border p-3">
         <NavLink
           to="/profile"
-          className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-sidebar-accent/60"
+          className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 hover:bg-sidebar-accent/60"
         >
           <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 font-mono text-xs font-semibold text-primary">
             {getInitials(user?.name)}

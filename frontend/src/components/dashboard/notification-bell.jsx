@@ -127,7 +127,10 @@ export function NotificationBell() {
           <Bell className="size-4" aria-hidden="true" />
         )}
         {(unread > 0 || loading) && (
-          <span className="absolute -right-1.5 -top-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-warning px-1 text-[10px] font-semibold leading-4 text-warning-foreground">
+          <span
+            aria-hidden="true"
+            className="absolute -right-1.5 -top-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-warning px-1 text-[10px] font-semibold leading-4 text-warning-foreground"
+          >
             {loading ? '…' : unread}
           </span>
         )}
@@ -149,7 +152,7 @@ export function NotificationBell() {
                 <button
                   type="button"
                   onClick={markAllRead}
-                  className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  className="inline-flex items-center gap-1 rounded text-xs text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 hover:text-foreground"
                 >
                   <CheckCheck className="size-3.5" aria-hidden="true" />
                   Mark all read
@@ -221,7 +224,7 @@ export function NotificationBell() {
                           type="button"
                           onClick={() => markRead(notification._id)}
                           aria-label="Mark as read"
-                          className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                          className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 hover:bg-secondary hover:text-foreground"
                         >
                           <Check className="size-3.5" aria-hidden="true" />
                         </button>

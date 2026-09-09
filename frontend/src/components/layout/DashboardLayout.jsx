@@ -10,6 +10,13 @@ export function DashboardLayout({ user, onLogout, searchTerm, onSearchChange }) 
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:ring-2 focus:ring-ring"
+      >
+        Skip to main content
+      </a>
+
       <div className="hidden lg:block">
         <Sidebar user={user} />
       </div>
@@ -22,7 +29,7 @@ export function DashboardLayout({ user, onLogout, searchTerm, onSearchChange }) 
           onSearchChange={onSearchChange}
           onOpenMenu={() => setMobileOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
           <Outlet />
         </main>
       </div>
@@ -31,7 +38,10 @@ export function DashboardLayout({ user, onLogout, searchTerm, onSearchChange }) 
       <DialogPrimitive.Root open={mobileOpen} onOpenChange={setMobileOpen}>
         <DialogPrimitive.Portal>
           <DialogPrimitive.Backdrop className="fixed inset-0 z-40 bg-black/60 lg:hidden" />
-          <DialogPrimitive.Popup className="fixed inset-y-0 left-0 z-50 h-full w-64 max-w-[80vw] outline-none lg:hidden">
+          <DialogPrimitive.Popup
+            aria-label="Navigation"
+            className="fixed inset-y-0 left-0 z-50 h-full w-64 max-w-[80vw] outline-none lg:hidden"
+          >
             <DialogPrimitive.Close
               render={
                 <button

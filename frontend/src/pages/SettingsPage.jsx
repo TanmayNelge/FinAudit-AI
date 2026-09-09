@@ -44,6 +44,7 @@ function PreferenceToggle({ label, description, checked, onChange }) {
       <SwitchPrimitive.Root
         checked={checked}
         onCheckedChange={onChange}
+        aria-label={label}
         className={cn(
           'flex h-6 w-10 shrink-0 cursor-pointer items-center rounded-full border border-input px-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
           checked ? 'bg-primary' : 'bg-muted',

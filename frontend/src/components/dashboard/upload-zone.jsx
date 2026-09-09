@@ -291,7 +291,7 @@ export function UploadZone({ onUploadComplete }) {
                                   ? 'text-foreground'
                                   : isDone
                                     ? 'text-primary'
-                                    : 'text-muted-foreground/60',
+                                    : 'text-muted-foreground/80',
                               )}
                             >
                               {isCurrent ? (
