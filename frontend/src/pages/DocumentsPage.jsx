@@ -5,6 +5,9 @@ import { cn } from '@/lib/utils'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog.jsx'
 import { useToast } from '@/components/ui/use-toast.js'
 import { ErrorState, EmptyState } from '@/components/ui/state.jsx'
+import { StatusBadge } from '@/components/ui/status-badge.jsx'
+import { ComplianceScore } from '@/components/ui/compliance-score.jsx'
+import { SortHeader } from '@/components/ui/sort-header.jsx'
 import {
   FileText,
   Search,
@@ -13,14 +16,8 @@ import {
   RefreshCw,
   Eye,
   Trash2,
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
   ChevronLeft,
   ChevronRight,
-  Loader2,
-  CheckCircle2,
-  AlertTriangle,
   Plus,
 } from 'lucide-react'
 
@@ -46,79 +43,6 @@ function formatDate(value) {
     hour: '2-digit',
     minute: '2-digit',
   })
-}
-
-function StatusBadge({ doc }) {
-  if (doc.status === 'processing') {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-400">
-        <Loader2 className="size-3 animate-spin" aria-hidden="true" />
-        Auditing
-      </span>
-    )
-  }
-  if (doc.status === 'completed') {
-    const ok = doc.complianceScore >= 80
-    return (
-      <span
-        className={cn(
-          'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium',
-          ok
-            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
-            : 'border-amber-500/20 bg-amber-500/10 text-amber-400',
-        )}
-      >
-        {ok ? (
-          <CheckCircle2 className="size-3" aria-hidden="true" />
-        ) : (
-          <AlertTriangle className="size-3" aria-hidden="true" />
-        )}
-        {ok ? 'Verified' : 'Needs review'}
-      </span>
-    )
-  }
-  if (doc.status === 'failed') {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-destructive/20 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
-        Rejected
-      </span>
-    )
-  }
-  return (
-    <span className="inline-flex items-center rounded-full border border-border bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-      Pending
-    </span>
-  )
-}
-
-function Score({ doc }) {
-  if (doc.status !== 'completed' || doc.complianceScore == null) {
-    return <span className="font-mono text-xs text-muted-foreground">--</span>
-  }
-  const ok = doc.complianceScore >= 80
-  return (
-    <span className={cn('font-mono text-sm font-semibold', ok ? 'text-emerald-400' : 'text-amber-400')}>
-      {doc.complianceScore}%
-    </span>
-  )
-}
-
-function SortHeader({ label, sortKey, activeKey, sortDir, onSort }) {
-  const isActive = activeKey === sortKey
-  const Icon = isActive ? (sortDir === 'asc' ? ChevronUp : ChevronDown) : ChevronsUpDown
-  return (
-    <button
-      type="button"
-      onClick={() => onSort(sortKey)}
-      className={cn(
-        'inline-flex items-center gap-1 transition-colors',
-        isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
-      )}
-    >
-      {label}
-      <Icon className={cn('size-3.5', !isActive && 'opacity-60')} aria-hidden="true" />
-    </button>
-  )
 }
 
 function SkeletonRows({ rows = PAGE_SIZE }) {
@@ -518,10 +442,10 @@ export function DocumentsPage({ refreshSignal = 0 }) {
                           </div>
                         </td>
                         <td className="p-4">
-                          <StatusBadge doc={doc} />
+                          <StatusBadge status={doc.status} score={doc.complianceScore} />
                         </td>
                         <td className="p-4 text-right">
-                          <Score doc={doc} />
+                          <ComplianceScore status={doc.status} score={doc.complianceScore} size="lg" />
                         </td>
                         <td className="p-4">
                           {doc.status === 'completed' ? (

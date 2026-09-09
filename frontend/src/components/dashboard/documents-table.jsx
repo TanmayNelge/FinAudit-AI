@@ -1,19 +1,11 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '@/lib/api.js'
-import {
-  FileText,
-  CheckCircle2,
-  AlertTriangle,
-  Loader2,
-  RefreshCw,
-  ChevronDown,
-  Eye,
-  Trash2,
-  Clock,
-} from 'lucide-react'
+import { FileText, AlertTriangle, Loader2, RefreshCw, ChevronDown, Eye, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog.jsx'
+import { StatusBadge } from '@/components/ui/status-badge.jsx'
+import { ComplianceScore } from '@/components/ui/compliance-score.jsx'
 import { useToast } from '@/components/ui/use-toast.js'
 
 function formatDate(value) {
@@ -201,53 +193,10 @@ export function DocumentsTable({ searchTerm = '', refreshSignal = 0 }) {
                           </div>
                         </td>
                         <td className="p-4">
-                          {doc.status === 'processing' && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-400 border border-blue-500/20">
-                              <Loader2 className="size-3 animate-spin" />
-                              Auditing
-                            </span>
-                          )}
-                          {doc.status === 'pending' && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                              <Clock className="size-3" />
-                              Pending
-                            </span>
-                          )}
-                          {doc.status === 'completed' && (
-                            <span
-                              className={cn(
-                                'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium border',
-                                doc.complianceScore >= 80
-                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                  : 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-                              )}
-                            >
-                              {doc.complianceScore >= 80 ? (
-                                <CheckCircle2 className="size-3" />
-                              ) : (
-                                <AlertTriangle className="size-3" />
-                              )}
-                              Verified
-                            </span>
-                          )}
-                          {doc.status === 'failed' && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive border border-destructive/20">
-                              Rejected
-                            </span>
-                          )}
+                          <StatusBadge status={doc.status} score={doc.complianceScore} />
                         </td>
                         <td className="p-4 text-right font-mono font-semibold">
-                          {doc.status === 'completed' ? (
-                            <span
-                              className={
-                                doc.complianceScore >= 80 ? 'text-emerald-400' : 'text-amber-400'
-                              }
-                            >
-                              {doc.complianceScore}%
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">--</span>
-                          )}
+                          <ComplianceScore status={doc.status} score={doc.complianceScore} size="sm" />
                         </td>
                         <td className="p-4">
                           <div className="flex items-center justify-end gap-1">
