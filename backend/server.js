@@ -14,13 +14,29 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+// Fail fast with a clear message if the JWT signing secret is missing, and
+// refuse to run in production with a weak secret.
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is not set. Copy backend/.env.example to backend/.env and set a strong secret.');
+}
+if (IS_PRODUCTION && process.env.JWT_SECRET.length < 32) {
+  throw new Error('JWT_SECRET is too weak. Use a random string of at least 32 characters.');
+}
+
+app.disable('x-powered-by');
+
+// When running behind a reverse proxy (production), trust the proxy hop count
+// so secure cookies and IP-based logic work correctly.
+if (IS_PRODUCTION) app.set('trust proxy', 1);
 
 // Middleware
 app.use(cors({
   origin: CLIENT_URL,
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
 // Database Connection
@@ -47,6 +63,9 @@ app.use((req, res, next) => {
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Request body too large' });
+  }
   console.error(err.stack);
   res.status(500).json({ error: 'Internal Server Error' });
 });

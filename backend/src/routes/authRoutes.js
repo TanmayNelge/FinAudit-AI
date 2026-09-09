@@ -5,12 +5,50 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { requireAuth } = require('../middleware/authMiddleware');
 
+// ---- Inline input validation (no extra dependency) ----
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_NAME_LENGTH = 80;
+const MIN_PASSWORD_LENGTH = 8;
+const MAX_PASSWORD_LENGTH = 72; // bcrypt truncates beyond 72 bytes
+
+function normalizeEmail(value) {
+  if (typeof value !== 'string') return '';
+  return value.trim().toLowerCase();
+}
+
+function validEmail(email) {
+  return EMAIL_RE.test(email);
+}
+
+// Loose JSON-safe validation: returns true only for a string within the
+// allowed length range.
+function validPassword(password) {
+  return (
+    typeof password === 'string' &&
+    password.length >= MIN_PASSWORD_LENGTH &&
+    password.length <= MAX_PASSWORD_LENGTH
+  );
+}
+
 // POST: Register User
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+    const email = normalizeEmail(req.body?.email);
+    const password = typeof req.body?.password === 'string' ? req.body.password : '';
 
-    // Check if user exists
+    if (!name || name.length > MAX_NAME_LENGTH) {
+      return res.status(400).json({ error: `Name must be between 1 and ${MAX_NAME_LENGTH} characters` });
+    }
+    if (!validEmail(email)) {
+      return res.status(400).json({ error: 'Please provide a valid email address' });
+    }
+    if (!validPassword(password)) {
+      return res.status(400).json({ error: `Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters` });
+    }
+
+    // Check if user exists (email was normalized above, so case variants collide)
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ error: 'Email already in use' });
 
@@ -34,6 +72,8 @@ router.post('/register', async (req, res) => {
     }).status(201).json({ message: 'Registration successful', user: { name: newUser.name, email: newUser.email } });
 
   } catch (error) {
+    // Don't echo internal errors to the client
+    console.error('Register Error:', error);
     res.status(500).json({ error: 'Registration failed' });
   }
 });
@@ -41,7 +81,12 @@ router.post('/register', async (req, res) => {
 // POST: Login User
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = normalizeEmail(req.body?.email);
+    const password = typeof req.body?.password === 'string' ? req.body.password : '';
+
+    if (!validEmail(email) || !password) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
 
     // Find user
     const user = await User.findOne({ email });
@@ -62,6 +107,7 @@ router.post('/login', async (req, res) => {
     }).status(200).json({ message: 'Login successful', user: { name: user.name, email: user.email } });
 
   } catch (error) {
+    console.error('Login Error:', error);
     res.status(500).json({ error: 'Login failed' });
   }
 });
@@ -102,6 +148,9 @@ router.patch('/me', requireAuth, async (req, res) => {
     if (name !== undefined) {
       const trimmed = typeof name === 'string' ? name.trim() : '';
       if (!trimmed) return res.status(400).json({ error: 'Name cannot be empty' });
+      if (trimmed.length > MAX_NAME_LENGTH) {
+        return res.status(400).json({ error: `Name must be at most ${MAX_NAME_LENGTH} characters` });
+      }
       user.name = trimmed;
     }
 

@@ -10,6 +10,16 @@ const { requireAuth } = require('../middleware/authMiddleware');
 
 // 25 MB to match the limit communicated to the user in the upload UI.
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
+const MAX_FILENAME_LENGTH = 120;
+
+// Normalize a client-supplied filename before it is stored/displayed: strip
+// path components, drop control characters, and cap the length.
+function sanitizeFileName(originalName) {
+  if (typeof originalName !== 'string') return 'document.pdf';
+  const base = originalName.split(/[/\\]/).pop() || 'document.pdf';
+  const cleaned = base.replace(/[\u0000-\u001f\u007f]/g, '').trim();
+  return cleaned ? cleaned.slice(0, MAX_FILENAME_LENGTH) : 'document.pdf';
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -83,7 +93,7 @@ router.post('/', requireAuth, (req, res, next) => {
     // 2. Initialize entry in MongoDB
     const newDocument = new Document({
       userId: req.userId,
-      fileName: req.file.originalname,
+      fileName: sanitizeFileName(req.file.originalname),
       status: 'processing'
     });
     await newDocument.save();
@@ -116,7 +126,7 @@ router.post('/', requireAuth, (req, res, next) => {
 
   } catch (error) {
     console.error('Upload Endpoint Error:', error);
-    res.status(500).json({ error: 'Failed to process pipeline', details: error.message });
+    res.status(500).json({ error: 'Failed to process pipeline' });
   } finally {
     // Release the parser's internal resources regardless of outcome.
     if (parser) await parser.destroy().catch(() => {});

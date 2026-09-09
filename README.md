@@ -97,7 +97,7 @@ secrets or API keys.**
 | `NODE_ENV` | `development` or `production` |
 | `CLIENT_URL` | Frontend origin, used for CORS (default `http://localhost:5173`) |
 | `MONGO_URI` | MongoDB connection string |
-| `JWT_SECRET` | Secret used to sign auth tokens — use a long, random string |
+| `JWT_SECRET` | Secret used to sign auth tokens — use a long, random string raised to at least 32 characters; the backend refuses to start in production with a weaker secret (see `backend/.env.example`) |
 | `GEMINI_API_KEY` | Google Gemini API key ([get one here](https://aistudio.google.com/app/apikey)) — required for the upload/audit pipeline to work |
 
 **`frontend/.env`** (see `frontend/.env.example`)
@@ -125,6 +125,22 @@ npm run dev
 The frontend runs on `http://localhost:5173` and the backend on
 `http://localhost:5000` by default. Visit the frontend URL, register an
 account, and start uploading PDFs.
+
+## Security Notes
+
+- **Auth tokens**: JWT in an HTTP-only cookie (`httpOnly`, `sameSite: lax`,
+  `secure` in production). Secrets are never sent to the client.
+- **CORS** is locked to `CLIENT_URL` with `credentials: true` — keep it that way.
+- **Input validation** is enforced server-side on register/login, profile
+  updates, and uploads: email format + case normalization, password length
+  (8–72 chars), name length, and sanitized/length-capped file names.
+- **Ownership checks**: every document/notification route scopes queries by the
+  authenticated user's id — users can only see, view, and delete their own data.
+- **Hardened boot**: the backend refuses to start without a `JWT_SECRET`, and
+  fails in production if it's under 32 characters. `x-powered-by` is disabled
+  and JSON bodies are limited.
+- **Logging**: internal error details are logged server-side only; error
+  messages returned to the client stay generic (no stack traces or secrets).
 
 ## API Documentation
 
