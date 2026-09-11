@@ -104,7 +104,12 @@ secrets or API keys.**
 
 | Variable | Description |
 |---|---|
-| `VITE_API_URL` | Base URL of the backend API (default `http://localhost:5000`) |
+| `VITE_API_URL` | Base URL of the backend API. Leave unset for the default same-origin `/api` (used in dev via Vite's proxy and when the backend serves the built frontend in production). Set an absolute URL for a cross-origin deployment |
+
+> The frontend default is now same-origin `/api`: Vite proxies `/api` to the
+> backend in development, and the Express server hosts the built bundle in
+> production — so no frontend env file is needed for the common single-origin
+> setup.
 
 ## Running the Project
 
@@ -125,6 +130,40 @@ npm run dev
 The frontend runs on `http://localhost:5173` and the backend on
 `http://localhost:5000` by default. Visit the frontend URL, register an
 account, and start uploading PDFs.
+
+## Production Deployment
+
+The backend serves the built frontend from the same origin, so a single
+process hosts both the API and the SPA.
+
+```bash
+# 1. Build the frontend
+cd frontend
+npm install
+npm run build        # outputs frontend/dist
+
+# 2. Configure the backend for production
+cd ../backend
+npm install
+# set NODE_ENV=production, a strong JWT_SECRET, MONGO_URI, CLIENT_URL and
+# GEMINI_API_KEY (see backend/.env.example)
+
+# 3. Start — Express serves the API and the built frontend together
+npm start
+```
+
+Notes:
+
+- `NODE_ENV=production` enables the SPA fallback (deep links like
+  `/documents/xyz` resolve to `index.html`), trusts one reverse-proxy hop, and
+  sets secure cookies. It also refuses to start unless `JWT_SECRET` is a random
+  string of 32+ characters.
+- Set `CLIENT_URL` to your public origin (it defaults to `http://localhost:5173`).
+  CORS is locked to that origin with credentials, so update it in production.
+- Because cookies are `secure` in production, serve the app over HTTPS (put it
+  behind a reverse proxy like Nginx/Caddy/Traefik or use a TLS-terminating host).
+- `frontend/.env` is not needed — the client calls same-origin `/api` by default.
+  Only set `VITE_API_URL` (before building) for a cross-origin deployment.
 
 ## Security Notes
 
@@ -154,9 +193,15 @@ from an HTTP-only `token` cookie set at login/registration.
 | POST | `/api/auth/login` | Log in, sets the session cookie | No |
 | POST | `/api/auth/logout` | Clear the session cookie | No |
 | GET | `/api/auth/me` | Return the current authenticated user (used to restore a session after a refresh) | Yes |
+| PATCH | `/api/auth/me` | Update display name and notification preferences | Yes |
 | POST | `/api/upload` | Upload a PDF (`multipart/form-data`, field `file`, max 25 MB), extract text, and run the Gemini compliance audit | Yes |
 | GET | `/api/documents` | List the current user's audited documents, newest first | Yes |
+| GET | `/api/documents/:id` | Return a single document with its compliance details | Yes |
+| DELETE | `/api/documents/:id` | Delete an uploaded document (owner only) | Yes |
 | GET | `/api/analytics` | Dashboard metrics: total audited, average score, critical (high-severity) alert count | Yes |
+| GET | `/api/notifications` | List notifications plus unread count | Yes |
+| PATCH | `/api/notifications/:id/read` | Mark one notification read | Yes |
+| PATCH | `/api/notifications/read-all` | Mark all notifications read | Yes |
 
 ## Architecture / Flow
 
@@ -180,16 +225,14 @@ to check for an existing valid session before showing the login screen.
 
 ## Known Limitations / Future Improvements
 
-- The sidebar's secondary navigation items (Documents, Upload Queue, Flagged Items, Audit Trail, Team, Settings, Support) are visual only —
-  the app is currently a single dashboard view and doesn't have separate
-  routed pages for them.
 - The `role` field on the User model (`analyst` / `admin`) is not yet used
   for authorization — there's no admin-only functionality.
-- There's no way to delete an uploaded document from the registry.
-- The notification bell shows live notifications (completed/failed audits) with
-  an unread badge, mark-as-read, and links to the source document. Notifications
-  are not persisted beyond a read flag — there's no in-app archive view.
+- Notifications are not persisted beyond a read flag — there's no in-app
+  archive view.
 - If the Gemini API call fails, the document is still marked `completed`
   with a fallback score of 50 and a generic flagged issue explaining the
   failure, so it's visible in the registry rather than silently lost —
   but genuinely broken/unparseable AI responses aren't retried.
+- There is no rate limiting on authentication endpoints and no CSRF token
+  (mitigated by `sameSite: lax` on the session cookie) — worth adding before
+  high-traffic public deploys.
