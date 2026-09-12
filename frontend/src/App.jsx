@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { api } from '@/lib/api.js';
 import { AuthPage } from '@/components/AuthPage.jsx';
+import { HomePage } from '@/pages/HomePage.jsx';
 import { DashboardLayout } from '@/components/layout/DashboardLayout.jsx';
 import { DashboardPage } from '@/pages/DashboardPage.jsx';
 import { DocumentsPage } from '@/pages/DocumentsPage.jsx';
@@ -81,7 +82,7 @@ export default function App() {
             user ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <Navigate to="/login" replace />
+              <HomePage />
             )
           }
         />

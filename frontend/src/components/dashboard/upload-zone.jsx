@@ -245,7 +245,7 @@ export function UploadZone({ onUploadComplete }) {
                 <div className="flex items-center gap-3">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-secondary text-muted-foreground">
                     {u.phase === 'done' ? (
-                      <CheckCircle2 className="size-4 text-emerald-500" aria-hidden="true" />
+                      <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-500" aria-hidden="true" />
                     ) : u.phase === 'error' ? (
                       <AlertCircle className="size-4 text-destructive" aria-hidden="true" />
                     ) : (
@@ -309,7 +309,7 @@ export function UploadZone({ onUploadComplete }) {
                     )}
 
                     {u.phase === 'done' && (
-                      <p className="mt-1 text-xs text-emerald-500">
+                      <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-500">
                         Analysis complete
                       </p>
                     )}

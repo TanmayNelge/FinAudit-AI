@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Search, LogOut, UserRound, Settings, ChevronDown, Menu } from 'lucide-react'
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { NotificationBell } from './notification-bell.jsx'
+import { ThemeToggle } from '@/components/ui/theme-toggle.jsx'
 
 const pageMeta = {
   '/dashboard': { title: 'Compliance Overview', description: 'Monitor document reviews and regulatory status' },
@@ -136,6 +137,8 @@ export function Topbar({ user, onLogout, searchTerm = '', onSearchChange, onOpen
             All systems operational
           </span>
         </div>
+
+        <ThemeToggle />
 
         <UserMenu user={user} onLogout={onLogout} />
       </div>

@@ -33,9 +33,9 @@ function getInitials(name) {
 
 function roleMeta(role) {
   if (role === 'admin') {
-    return { label: 'Administrator', badge: 'border-amber-500/20 bg-amber-500/10 text-amber-400' }
+    return { label: 'Administrator', badge: 'border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400' }
   }
-  return { label: 'Analyst', badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' }
+  return { label: 'Analyst', badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' }
 }
 
 const permissionRows = [
@@ -162,8 +162,8 @@ export function TeamPage() {
               <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium', role.badge)}>
                 {role.label}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
-                <span className="size-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                <span className="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" aria-hidden="true" />
                 Member
               </span>
             </div>
@@ -200,7 +200,7 @@ export function TeamPage() {
                   {permission.label}
                 </span>
                 {permission.value === true ? (
-                  <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
+                  <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
                     Enabled
                   </span>
                 ) : permission.value === 'admin-only' ? (
@@ -208,7 +208,7 @@ export function TeamPage() {
                     className={cn(
                       'rounded-full border px-2.5 py-0.5 text-xs font-medium',
                       isAdmin
-                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
+                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                         : 'border-border bg-secondary text-muted-foreground',
                     )}
                   >

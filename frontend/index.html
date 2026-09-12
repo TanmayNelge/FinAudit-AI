@@ -4,9 +4,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0a0e12" />
+    <script>
+      (function () {
+        var THEME_KEY = 'finaudit-theme'
+        var stored = null
+        try {
+          stored = window.localStorage.getItem(THEME_KEY)
+        } catch (e) {}
+        var theme =
+          stored === 'dark' || stored === 'light'
+            ? stored
+            : window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark'
+        var root = document.documentElement
+        root.dataset.theme = theme
+        var colorMeta = document.querySelector('meta[name="theme-color"]')
+        if (colorMeta) {
+          colorMeta.setAttribute('content', theme === 'light' ? '#f7f8fa' : '#0a0e12')
+        }
+      })()
+    </script>
     <meta
       name="description"
-      content="Upload, review, and track the compliance status of your financial documents."
+      content="FinAudit AI — upload financial PDFs and get AI-powered compliance scores, flagged risks by severity, and a full audit trail in one dashboard."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,7 +35,7 @@
       href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <title>Sentinel — Financial Compliance Dashboard</title>
+    <title>FinAudit AI — AI-Powered Financial Compliance Auditing</title>
   </head>
   <body class="font-sans antialiased">
     <div id="root"></div>

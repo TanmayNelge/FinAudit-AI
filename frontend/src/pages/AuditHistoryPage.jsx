@@ -43,14 +43,14 @@ function eventMeta(type) {
   if (type === 'uploaded') {
     return {
       label: 'Uploaded',
-      badge: 'border-blue-500/20 bg-blue-500/10 text-blue-400',
+      badge: 'border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400',
       icon: Upload,
     }
   }
   if (type === 'completed') {
     return {
       label: 'Completed',
-      badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400',
+      badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
       icon: CheckCircle2,
     }
   }
@@ -420,7 +420,7 @@ export function AuditHistoryPage() {
                         </td>
                         <td className="p-4">
                           {ev.score != null ? (
-                            <span className={cn('font-mono text-sm font-semibold', ev.score >= 80 ? 'text-emerald-400' : 'text-amber-400')}>
+                            <span className={cn('font-mono text-sm font-semibold', ev.score >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
                               {ev.score}%
                             </span>
                           ) : (

@@ -248,8 +248,8 @@ export function DocumentsTable({ searchTerm = '', refreshSignal = 0 }) {
                                       issue.severity === 'High'
                                         ? 'text-destructive'
                                         : issue.severity === 'Medium'
-                                          ? 'text-amber-400'
-                                          : 'text-blue-400',
+                                          ? 'text-amber-600 dark:text-amber-400'
+                                          : 'text-blue-600 dark:text-blue-400',
                                     )}
                                   />
                                   <div>

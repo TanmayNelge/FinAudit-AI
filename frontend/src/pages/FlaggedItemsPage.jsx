@@ -43,9 +43,9 @@ function severityMeta(severity) {
     return { badge: 'border-destructive/20 bg-destructive/10 text-destructive', dot: 'bg-destructive' }
   }
   if (severity === 'Medium') {
-    return { badge: 'border-amber-500/20 bg-amber-500/10 text-amber-400', dot: 'bg-amber-400' }
+    return { badge: 'border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400', dot: 'bg-amber-500 dark:bg-amber-400' }
   }
-  return { badge: 'border-sky-500/20 bg-sky-500/10 text-sky-400', dot: 'bg-sky-400' }
+  return { badge: 'border-sky-500/20 bg-sky-500/10 text-sky-600 dark:text-sky-400', dot: 'bg-sky-500 dark:bg-sky-400' }
 }
 
 // Issues only ever exist on completed documents, so the status reflects the
@@ -55,12 +55,12 @@ function statusMeta(status) {
     return { label: 'Rejected', badge: 'border-destructive/20 bg-destructive/10 text-destructive' }
   }
   if (status === 'processing') {
-    return { label: 'Auditing', badge: 'border-blue-500/20 bg-blue-500/10 text-blue-400' }
+    return { label: 'Auditing', badge: 'border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400' }
   }
   if (status === 'pending') {
     return { label: 'Pending', badge: 'border-border bg-secondary text-muted-foreground' }
   }
-  return { label: 'Completed', badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' }
+  return { label: 'Completed', badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' }
 }
 
 function SkeletonRows({ rows = PAGE_SIZE }) {

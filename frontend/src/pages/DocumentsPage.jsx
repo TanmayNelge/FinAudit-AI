@@ -449,7 +449,7 @@ export function DocumentsPage({ refreshSignal = 0 }) {
                         </td>
                         <td className="p-4">
                           {doc.status === 'completed' ? (
-                            <span className={cn('font-mono text-xs', issueCount > 0 ? 'text-amber-400' : 'text-muted-foreground')}>
+                            <span className={cn('font-mono text-xs', issueCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground')}>
                               {issueCount} {issueCount === 1 ? 'issue' : 'issues'}
                             </span>
                           ) : (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '@/lib/api.js';
-import { Mail, Lock, User, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button.jsx';
 
 export function AuthPage({ onLoginSuccess }) {
@@ -41,7 +42,14 @@ export function AuthPage({ onLoginSuccess }) {
     'w-full rounded-lg border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground transition-colors outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30';
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background p-4 text-foreground">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 text-foreground">
+      <Link
+        to="/"
+        className="mb-6 flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 rounded"
+      >
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        Back to homepage
+      </Link>
       <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
         {/* Header Section */}
         <div className="border-b border-border bg-card/50 p-8 text-center">

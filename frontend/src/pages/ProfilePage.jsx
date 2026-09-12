@@ -24,9 +24,9 @@ function getInitials(name) {
 
 function roleMeta(role) {
   if (role === 'admin') {
-    return { label: 'Administrator', badge: 'border-amber-500/20 bg-amber-500/10 text-amber-400' }
+    return { label: 'Administrator', badge: 'border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400' }
   }
-  return { label: 'Analyst', badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' }
+  return { label: 'Analyst', badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' }
 }
 
 function InfoField({ label, value }) {

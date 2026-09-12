@@ -17,12 +17,12 @@ import {
 
 function typeMeta(type) {
   if (type === 'completed') {
-    return { icon: CheckCircle2, tone: 'text-emerald-400', bar: 'bg-emerald-500' }
+    return { icon: CheckCircle2, tone: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500' }
   }
   if (type === 'failed') {
     return { icon: XCircle, tone: 'text-destructive', bar: 'bg-destructive' }
   }
-  return { icon: Upload, tone: 'text-blue-400', bar: 'bg-blue-500' }
+  return { icon: Upload, tone: 'text-blue-600 dark:text-blue-400', bar: 'bg-blue-500' }
 }
 
 function formatRelative(value) {
@@ -39,7 +39,7 @@ function formatRelative(value) {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
-const emptyMeta = { icon: Upload, tone: 'text-blue-400', bar: 'bg-blue-500' }
+const emptyMeta = { icon: Upload, tone: 'text-blue-600 dark:text-blue-400', bar: 'bg-blue-500' }
 
 export function NotificationBell() {
   const [notifications, setNotifications] = useState([])

@@ -11,7 +11,7 @@ const ICONS = {
 }
 
 const ACCENTS = {
-  success: 'border-emerald-500/30 text-emerald-400',
+  success: 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
   error: 'border-destructive/30 text-destructive',
   info: 'border-border text-primary',
 }

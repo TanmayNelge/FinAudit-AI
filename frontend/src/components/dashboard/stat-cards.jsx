@@ -54,7 +54,7 @@ export function StatCards() {
       value: loading ? <Loader2 className="size-5 animate-spin" /> : `${metrics.avgScore}/100`,
       icon: Activity,
       trend: metrics.avgScore >= 80 ? 'Optimal Status' : 'Needs Review',
-      color: metrics.avgScore >= 80 ? 'text-emerald-400' : 'text-amber-400',
+      color: metrics.avgScore >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400',
       bg: metrics.avgScore >= 80 ? 'bg-emerald-500/10' : 'bg-amber-500/10'
     },
     {

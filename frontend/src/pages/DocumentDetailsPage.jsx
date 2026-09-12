@@ -44,31 +44,31 @@ function severityMeta(severity) {
   }
   if (severity === 'Medium') {
     return {
-      badge: 'border-amber-500/20 bg-amber-500/10 text-amber-400',
+      badge: 'border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400',
       icon: AlertTriangle,
-      dot: 'bg-amber-400',
+      dot: 'bg-amber-500 dark:bg-amber-400',
     }
   }
   return {
-    badge: 'border-blue-500/20 bg-blue-500/10 text-blue-400',
+    badge: 'border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400',
     icon: Info,
-    dot: 'bg-blue-400',
+    dot: 'bg-blue-500 dark:bg-blue-400',
   }
 }
 
 function riskMeta(score) {
   if (score == null) return null
-  if (score >= 80) return { label: 'Low risk', badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400', bar: 'bg-emerald-500' }
-  if (score >= 60) return { label: 'Moderate risk', badge: 'border-amber-500/20 bg-amber-500/10 text-amber-400', bar: 'bg-amber-400' }
+  if (score >= 80) return { label: 'Low risk', badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500' }
+  if (score >= 60) return { label: 'Moderate risk', badge: 'border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400', bar: 'bg-amber-500 dark:bg-amber-400' }
   return { label: 'High risk', badge: 'border-destructive/20 bg-destructive/10 text-destructive', bar: 'bg-destructive' }
 }
 
 function statusMeta(status) {
   if (status === 'processing') {
-    return { label: 'Processing', badge: 'border-blue-500/20 bg-blue-500/10 text-blue-400', icon: Loader2 }
+    return { label: 'Processing', badge: 'border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400', icon: Loader2 }
   }
   if (status === 'completed') {
-    return { label: 'Completed', badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400', icon: CheckCircle2 }
+    return { label: 'Completed', badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 }
   }
   if (status === 'failed') {
     return { label: 'Failed', badge: 'border-destructive/20 bg-destructive/10 text-destructive', icon: XCircle }
@@ -300,7 +300,7 @@ function AuditTrailTab({ doc }) {
             : 'The document is currently being reviewed by the AI pipeline.',
       time: doc.updatedAt,
       icon: doc.status === 'failed' ? XCircle : doc.status === 'completed' ? CheckCircle2 : Loader2,
-      tone: doc.status === 'failed' ? 'text-destructive' : doc.status === 'completed' ? 'text-emerald-400' : 'text-blue-400',
+      tone: doc.status === 'failed' ? 'text-destructive' : doc.status === 'completed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400',
     },
   ]
 
@@ -595,7 +595,7 @@ function DocumentDetails({ id }) {
                     ))
                   ) : (
                     <div className="flex flex-col items-center gap-3 py-10 text-center">
-                      <div className="flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+                      <div className="flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">
                         <CheckCircle2 className="size-6" aria-hidden="true" />
                       </div>
                       <p className="text-sm font-medium text-foreground">No compliance issues detected</p>

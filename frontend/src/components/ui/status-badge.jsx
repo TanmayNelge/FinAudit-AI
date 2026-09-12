@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 export function StatusBadge({ status, score }) {
   if (status === 'processing') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-400">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-600 dark:text-blue-400">
         <Loader2 className="size-3 animate-spin" aria-hidden="true" />
         Auditing
       </span>
@@ -17,8 +17,8 @@ export function StatusBadge({ status, score }) {
         className={cn(
           'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium',
           ok
-            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
-            : 'border-amber-500/20 bg-amber-500/10 text-amber-400',
+            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+            : 'border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400',
         )}
       >
         {ok ? (

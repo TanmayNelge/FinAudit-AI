@@ -10,7 +10,7 @@ export function ComplianceScore({ status, score, size = 'sm' }) {
       className={cn(
         'font-mono font-semibold',
         size === 'sm' ? 'text-sm' : 'text-xs',
-        ok ? 'text-emerald-400' : 'text-amber-400',
+        ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400',
       )}
     >
       {score}%
