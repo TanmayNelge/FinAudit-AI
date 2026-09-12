@@ -1,22 +1,42 @@
 # FinAudit AI
 
-FinAudit AI is a MERN-stack application for auditing financial documents.
-Analysts upload a PDF (annual reports, AML/KYC batches, vendor contracts, regulatory filings, etc.), and the backend extracts the text and sends it to
-Google's Gemini API for an automated compliance review. Each document comes back with a compliance score out of 100 and a list of flagged issues
-(clause, reason, and severity), which are stored and surfaced on a dashboard.
+FinAudit AI is an AI-powered compliance & document audit SaaS built on the
+MERN stack. Analysts upload a PDF (annual reports, AML/KYC batches, vendor
+contracts, regulatory filings, etc.), and the backend extracts the text and
+sends it to Google's Gemini API for an automated compliance review. Each
+document comes back with a compliance score out of 100 and a list of flagged
+issues (clause, reason, and severity), stored and surfaced across the
+workspace.
+
+Visitors first land on a marketing homepage (see below) that explains the
+product before signing in; the app itself is a responsive, theme-aware
+(dark/light) dashboard.
 
 ## Main Features
 
-- **Authentication** — register/login/logout with JWT stored in an HTTP-only cookie; sessions persist across page refreshes.
-- **PDF upload & AI audit pipeline** — drag-and-drop or click-to-browse upload of PDF files (up to 25 MB), text extraction via `pdf-parse`, and compliance analysis via the Gemini API.
-- **Audit registry** — a table of every document you've uploaded, its
-  status (`processing` / `completed` / `failed`), and its compliance score.
-  Completed documents with flagged issues can be expanded to see each
-  issue's clause, reason, and severity.
-- **Search** — filter the audit registry by filename.
-- **Dashboard analytics** — total documents audited, average compliance
-  score, and count of documents with at least one high-severity issue,
-  refreshed automatically.
+- **SaaS landing page** — a marketing homepage at `/` describing the product,
+  its feature set and security model before visitors sign in.
+- **Authentication** — register/login/logout with a JWT stored in an HTTP-only
+  cookie; sessions persist across refreshes and are restored via `/api/auth/me`.
+- **Upload & AI audit pipeline** — drag-and-drop PDF upload (max 25 MB) with
+  live progress, then a staged pipeline (processing → extracting text →
+  compliance analysis → report) with success, failure and retry states.
+- **Compliance dashboard** — live stat cards (total audits, average score,
+  critical alerts) plus an audit registry with expandable flagged issues.
+- **Document management** — search, status filters, sortable columns and
+  pagination; delete with a confirmation dialog; a detail page with
+  Overview / Issues / Extracted Data / Audit Trail tabs.
+- **Flagged items** — all issues across every document aggregated into one
+  searchable, filterable, severity-coded table.
+- **Audit history** — a chronological ledger of upload/completed/failed events
+  derived from real document data.
+- **Notification center** — a live bell with unread badge, mark-read actions,
+  and document links; events are emitted when an analysis completes or fails.
+- **Profile & settings** — real account data plus editable display name and
+  notification preferences.
+- **Team** — a scoped, read-only panel of the current workspace member.
+- **Theme & responsive** — a dark/light theme toggle (persisted, follows the OS
+  until you choose) and a mobile slide-in navigation drawer.
 
 All data is scoped per user — you only ever see documents you uploaded.
 
@@ -24,6 +44,7 @@ All data is scoped per user — you only ever see documents you uploaded.
 
 **Frontend**
 - React 19 + Vite
+- react-router-dom (routing)
 - Tailwind CSS v4
 - axios
 - lucide-react (icons)
@@ -46,27 +67,29 @@ All data is scoped per user — you only ever see documents you uploaded.
 frontend/
   src/
     components/
-      AuthPage.jsx            # Login / register screen
-      dashboard/
-        sidebar.jsx           # Left nav (workspace shell)
-        topbar.jsx             # Search, notifications, logout
-        stat-cards.jsx        # Dashboard analytics cards
-        upload-zone.jsx       # Drag-and-drop PDF upload
-        documents-table.jsx   # Audit registry with expandable flagged issues
-      ui/button.jsx           # Shared button primitive
+      AuthPage.jsx              # Login / register screen
+      layout/DashboardLayout.jsx  # Sidebar + topbar shell (mobile drawer)
+      dashboard/                # sidebar, topbar, stat-cards, upload-zone,
+                                # documents-table, notification-bell
+      ui/                       # button, toast, state, confirm-dialog,
+                                # status-badge, compliance-score, sort-header,
+                                # poll-provider, theme-provider/theme-toggle
+    pages/                      # HomePage (landing), Dashboard, Documents,
+                                # DocumentDetails, Upload, FlaggedItems,
+                                # AuditHistory, Team, Settings, Profile, Support
     lib/
-      api.js                 # Centralized axios instance
-      utils.js                # `cn()` classname helper
-    App.jsx                   # Session check + top-level layout/routing
+      api.js                    # Centralized axios instance
+      utils.js                  # `cn()` classname helper
+    App.jsx                     # Session check + top-level routing
     main.jsx
 
 backend/
-  server.js                   # Express app entry point
+  server.js                     # Express entry; serves frontend/dist in production
   src/
-    models/                   # User, Document (Mongoose schemas)
-    routes/                   # auth, upload, documents, analytics
+    models/                     # User, Document, Notification (Mongoose schemas)
+    routes/                     # auth, upload, documents, analytics, notifications
     middleware/authMiddleware.js  # JWT cookie verification
-    services/aiService.js     # Gemini API integration
+    services/aiService.js       # Gemini API integration
 ```
 
 ## Installation
@@ -128,8 +151,10 @@ npm run dev
 ```
 
 The frontend runs on `http://localhost:5173` and the backend on
-`http://localhost:5000` by default. Visit the frontend URL, register an
-account, and start uploading PDFs.
+`http://localhost:5000` by default. Visit the frontend URL — you'll land on the
+product homepage, where you can register and start uploading PDFs.
+
+Run `npm run lint` (frontend) before pushing to catch ESLint issues.
 
 ## Production Deployment
 
@@ -229,6 +254,11 @@ to check for an existing valid session before showing the login screen.
   for authorization — there's no admin-only functionality.
 - Notifications are not persisted beyond a read flag — there's no in-app
   archive view.
+- Uploaded PDFs are not stored or re-downloadable — only file metadata and AI
+  results are persisted, and no file download endpoint exists.
+- Deleting a document leaves its notifications orphaned (they point at a
+  deleted `docId`; harmless since everything is ownership-scoped, but not
+  cleaned up).
 - If the Gemini API call fails, the document is still marked `completed`
   with a fallback score of 50 and a generic flagged issue explaining the
   failure, so it's visible in the registry rather than silently lost —
