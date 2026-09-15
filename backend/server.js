@@ -59,15 +59,15 @@ app.use('/api/notifications', notificationRoutes);
 
 // SPA fallback — in production, serve the built frontend from `frontend/dist`
 // and return `index.html` for any non-API GET so client-side routing works.
-if (IS_PRODUCTION) {
-  const distPath = path.join(__dirname, '..', 'frontend', 'dist');
-  app.use(express.static(distPath));
-  app.use((req, res, next) => {
-    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
-    if (req.path.startsWith('/api/')) return next();
-    res.sendFile(path.join(distPath, 'index.html'));
-  });
-}
+// if (IS_PRODUCTION) {
+//   const distPath = path.join(__dirname, '..', 'frontend', 'dist');
+//   app.use(express.static(distPath));
+//   app.use((req, res, next) => {
+//     if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+//     if (req.path.startsWith('/api/')) return next();
+//     res.sendFile(path.join(distPath, 'index.html'));
+//   });
+// }
 
 // 404 Handler (API + any request not handled above)
 app.use((req, res, next) => {
